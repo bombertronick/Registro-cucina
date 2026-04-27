@@ -1,1 +1,90 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Registro Cucina Offline</title>
+    <style>
+        :root { --green: #2e7d32; --red: #c62828; --blue: #1565c0; --orange: #ef6c00; }
+        body { font-family: sans-serif; margin: 0; background: #f4f7f6; padding-bottom: 70px; }
+        header { background: #333; color: white; text-align: center; padding: 15px; font-weight: bold; }
+        .tabs { display: flex; background: white; overflow-x: auto; border-bottom: 1px solid #ddd; }
+        .tab { flex: 1; padding: 15px 5px; text-align: center; cursor: pointer; font-size: 12px; font-weight: bold; color: #666; border-bottom: 3px solid transparent; white-space: nowrap; }
+        .tab.active { color: var(--green); border-bottom-color: var(--green); }
+        .section { display: none; padding: 10px; }
+        .section.active { display: block; }
+        .card { background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); overflow: hidden; }
+        table { width: 100%; border-collapse: collapse; }
+        th { background: #eee; padding: 10px; text-align: left; font-size: 12px; }
+        td { padding: 12px 10px; border-bottom: 1px solid #eee; font-size: 14px; }
+        .check-col { width: 45px; text-align: center; }
+        input[type="checkbox"] { transform: scale(1.5); }
+        tr.done { background-color: #e8f5e9; }
+        .footer { position: fixed; bottom: 0; width: 100%; background: white; display: flex; padding: 10px; gap: 10px; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); }
+        button { flex: 1; padding: 12px; border: none; border-radius: 6px; font-weight: bold; }
+        .btn-reset { background: #eee; }
+        .btn-save { background: var(--green); color: white; }
+    </style>
+</head>
+<body>
 
+<header>REGISTRO PREPARAZIONI</header>
+
+<div class="tabs">
+    <div class="tab active" onclick="openTab(event, 'tab1')">LUN/GIO</div>
+    <div class="tab" onclick="openTab(event, 'tab2')">VENERDÌ</div>
+    <div class="tab" onclick="openTab(event, 'tab3')">SAB/DOM</div>
+    <div class="tab" onclick="openTab(event, 'tab4')">MAGAZZINO</div>
+</div>
+
+<div class="content">
+    <div id="tab1" class="section active"><div class="card"><table id="table1"></table></div></div>
+    <div id="tab2" class="section"><div class="card"><table id="table2"></table></div></div>
+    <div id="tab3" class="section"><div class="card"><table id="table3"></table></div></div>
+    <div id="tab4" class="section"><div class="card"><table id="table4"></table></div></div>
+</div>
+
+<div class="footer">
+    <button class="btn-reset" onclick="resetForm()">RESET</button>
+    <button class="btn-save" onclick="alert('Salvato sul telefono!')">SALVA</button>
+</div>
+
+<script>
+    const inventory = {
+        tab1: [{n:"Fiori di zucca",s:"1/3"},{n:"Patate forno",s:"2/3"},{n:"Zucchine",s:"1/6"},{n:"Melanzane",s:"1/6"},{n:"Peperoni",s:"1/6"},{n:"Funghi",s:"1/1"},{n:"Salsiccia",s:"1/3"},{n:"Cotto",s:"1/6"},{n:"Crudo",s:"1/3"},{n:"Guanciale",s:"1/6"},{n:"Ventricina",s:"1/6"},{n:"Provola",s:"1/6"},{n:"Mozzarella",s:"40kg"},{n:"Sugo",s:"3 1/1"}],
+        tab2: [{n:"Fiori di zucca",s:"1/3"},{n:"Rughetta",s:"3 etti"},{n:"Mozz. No Latt.",s:"1.5kg"},{n:"Pecorino",s:"1kg"},{n:"Mozzarella",s:"60kg"}],
+        tab3: [{n:"Fiori di zucca",s:"1/3"},{n:"Patate forno",s:"3/3"},{n:"Funghi",s:"4 1/1"},{n:"Crudo",s:"3 1/3"},{n:"Rughetta",s:"4 etti"},{n:"Mozzarella",s:"120kg"},{n:"Sugo",s:"4 1/1"}],
+        tab4: [{n:"Carciofi/Olive",s:"Apertura"},{n:"Olio EVO",s:"< 2lt"},{n:"Olio Semi",s:"< 5lt"},{n:"Sale/Pepe",s:"< 2kg"}]
+    };
+
+    function render() {
+        for (let tId in inventory) {
+            const table = document.getElementById(tId.replace('tab', 'table'));
+            table.innerHTML = `<tr><th>Alimento</th><th class="check-col">✓</th></tr>`;
+            inventory[tId].forEach((item, idx) => {
+                const rowId = tId+idx;
+                const isDone = localStorage.getItem(rowId) === 'true';
+                table.innerHTML += `<tr id="tr-${rowId}" class="${isDone?'done':''}"><td><b>${item.n}</b><br><small>Scorta: ${item.s}</small></td><td class="check-col"><input type="checkbox" ${isDone?'checked':''} onchange="upd('${rowId}',this.checked)"></td></tr>`;
+            });
+        }
+    }
+
+    function upd(id, val) {
+        localStorage.setItem(id, val);
+        document.getElementById('tr-'+id).className = val ? 'done' : '';
+    }
+
+    function openTab(evt, tabId) {
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+        evt.currentTarget.classList.add('active');
+    }
+
+    function resetForm() {
+        if(confirm("Azzerare tutto?")) { localStorage.clear(); render(); }
+    }
+    render();
+</script>
+</body>
+</html>
