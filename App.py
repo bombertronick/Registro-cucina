@@ -1,88 +1,87 @@
-import streamlit as st
+    import streamlit as st
 import pandas as pd
 
-# Configurazione estetica
-st.set_page_config(page_title="Registro Cucina", layout="centered")
+# Impostazioni pagina
+st.set_page_config(page_title="Registro Preparazioni", layout="centered")
 
+# TRUCCO PER NASCONDERE LA BARRA STRANA (Occhietto, Download, ecc.)
 st.markdown("""
     <style>
-    .main { background-color: #f5f5f5; }
-    .stButton>button { width: 100%; border-radius: 5px; height: 3em; background-color: #2e7d32; color: white; }
+    [data-testid="stElementToolbar"] { display: none !important; }
+    .main { background-color: #ffffff; }
     </style>
     """, unsafe_allow_html=True)
 
-st.title("👨‍🍳 Registro Preparazioni v1.0")
+st.title("👨‍🍳 Registro Preparazioni")
 
-# Database integrato nell'app
 if 'data' not in st.session_state:
     st.session_state.data = {
-        "LUNEDÌ / GIOVEDÌ": [
-            {"Alimento": "Fiori di zucca", "In Linea": "1 gn 1/3", "Scorta": "1"},
-            {"Alimento": "Patate al forno", "In Linea": "1 gn 1/3", "Scorta": "2"},
-            {"Alimento": "Zucchine al forno", "In Linea": "1 gn 1/6", "Scorta": "2"},
-            {"Alimento": "Melanzane al forno", "In Linea": "1 gn 1/6", "Scorta": "1"},
-            {"Alimento": "Peperoni al forno", "In Linea": "1 gn 1/6", "Scorta": "1"},
-            {"Alimento": "Funghi affettati", "In Linea": "1 gn 1/1", "Scorta": "3"},
-            {"Alimento": "Salsiccia", "In Linea": "gn 1/3", "Scorta": "1"},
-            {"Alimento": "Mozzarella julienne", "In Linea": "gn 1/1", "Scorta": "40 KG"},
-            {"Alimento": "Sugo", "In Linea": "1 gn 1/1", "Scorta": "3"}
+        "LUN / GIO": [
+            {"Alimento": "Fiori di zucca", "Linea": "1 gn 1/3", "Scorta": "1"},
+            {"Alimento": "Patate al forno", "Linea": "1 gn 1/3", "Scorta": "2"},
+            {"Alimento": "Zucchine al forno", "Linea": "1 gn 1/6", "Scorta": "2"},
+            {"Alimento": "Melanzane al forno", "Linea": "1 gn 1/6", "Scorta": "1"},
+            {"Alimento": "Peperoni al forno", "Linea": "1 gn 1/6", "Scorta": "1"},
+            {"Alimento": "Funghi affettati", "Linea": "1 gn 1/1", "Scorta": "3"},
+            {"Alimento": "Salsiccia", "Linea": "gn 1/3", "Scorta": "1"},
+            {"Alimento": "Prosciutto cotto", "Linea": "1 gn 1/6", "Scorta": "1"},
+            {"Alimento": "Prosciutto crudo", "Linea": "1 gn 1/3", "Scorta": "2"},
+            {"Alimento": "Guanciale", "Linea": "1 gn 1/6", "Scorta": "1"},
+            {"Alimento": "Ventricina", "Linea": "1 gn 1/6", "Scorta": "2"},
+            {"Alimento": "Provola", "Linea": "1 gn 1/6", "Scorta": "1"},
+            {"Alimento": "Mozzarella julienne", "Linea": "gn 1/1", "Scorta": "40 KG"},
+            {"Alimento": "Sugo", "Linea": "1 gn 1/1", "Scorta": "3"}
         ],
         "VENERDÌ": [
-            {"Alimento": "Fiori di zucca", "In Linea": "1 gn 1/3", "Scorta": "1"},
-            {"Alimento": "Rughetta", "In Linea": "1 gn 1/3", "Scorta": "3 etti"},
-            {"Alimento": "Mozz. no lattosio", "In Linea": "1 gn 1/3", "Scorta": "1,5 kg"},
-            {"Alimento": "Pecorino gratt.", "In Linea": "gn 1/6", "Scorta": "1 kg"},
-            {"Alimento": "Mozzarella julienne", "In Linea": "gn 1/1", "Scorta": "60 KG"}
+            {"Alimento": "Fiori di zucca", "Linea": "1 gn 1/3", "Scorta": "1"},
+            {"Alimento": "Rughetta", "Linea": "1 gn 1/3", "Scorta": "3 etti"},
+            {"Alimento": "Mozz. no lattosio", "Linea": "1 gn 1/3", "Scorta": "1,5 kg"},
+            {"Alimento": "Pecorino gratt.", "Linea": "gn 1/6", "Scorta": "1 kg"},
+            {"Alimento": "Mozzarella julienne", "Linea": "gn 1/1", "Scorta": "60 KG"}
         ],
-        "SABATO / DOMENICA": [
-            {"Alimento": "Fiori di zucca", "In Linea": "1 gn 1/3", "Scorta": "1"},
-            {"Alimento": "Patate al forno", "In Linea": "1 gn 1/3", "Scorta": "3"},
-            {"Alimento": "Funghi affettati", "In Linea": "1 gn 1/1", "Scorta": "4"},
-            {"Alimento": "Prosciutto crudo", "In Linea": "1 gn 1/3", "Scorta": "3"},
-            {"Alimento": "Mozzarella julienne", "In Linea": "gn 1/1", "Scorta": "120 KG"},
-            {"Alimento": "Sugo", "In Linea": "1 gn 1/1", "Scorta": "4"}
+        "SAB / DOM": [
+            {"Alimento": "Fiori di zucca", "Linea": "1 gn 1/3", "Scorta": "1"},
+            {"Alimento": "Patate al forno", "Linea": "1 gn 1/3", "Scorta": "3"},
+            {"Alimento": "Zucchine al forno", "Linea": "1 gn 1/6", "Scorta": "2"},
+            {"Alimento": "Melanzane al forno", "Linea": "1 gn 1/6", "Scorta": "2"},
+            {"Alimento": "Peperoni al forno", "Linea": "1 gn 1/6", "Scorta": "1"},
+            {"Alimento": "Funghi affettati", "Linea": "1 gn 1/1", "Scorta": "4"},
+            {"Alimento": "Prosciutto crudo", "Linea": "1 gn 1/3", "Scorta": "3"},
+            {"Alimento": "Rughetta", "Linea": "1 gn 1/3", "Scorta": "4 etti"},
+            {"Alimento": "Mozzarella julienne", "Linea": "gn 1/1", "Scorta": "120 KG"},
+            {"Alimento": "Sugo", "Linea": "1 gn 1/1", "Scorta": "4"}
         ],
         "MAGAZZINO": [
-            {"Alimento": "Carciofi/Olive/Alici", "Regola": "Appena aperto"},
-            {"Alimento": "Olio EVO", "Regola": "Sotto 2lt"},
-            {"Alimento": "Olio di semi", "Regola": "Sotto 5lt"},
-            {"Alimento": "Sale/Pepe/Origano", "Regola": "Sotto 2kg"},
-            {"Alimento": "Mozz. no lattosio", "Regola": "Appena aperta"}
+            {"Prodotto": "Carciofi/Olive/Alici", "Regola": "Appena aperto"},
+            {"Prodotto": "Tonno/Uova sode", "Regola": "Appena aperto"},
+            {"Prodotto": "Olio EVO", "Regola": "Sotto 2lt"},
+            {"Prodotto": "Olio semi", "Regola": "Sotto 5lt"},
+            {"Prodotto": "Sale/Pepe/Origano", "Regola": "Sotto 2kg"},
+            {"Prodotto": "Cipolla a fette", "Regola": "Sotto 0.2kg"},
+            {"Prodotto": "Mozz. no lattosio", "Regola": "Appena aperta"}
         ]
     }
-    # Aggiungi colonna Fatto e Note a tutti
-    for day in st.session_state.data:
-        for item in st.session_state.data[day]:
-            item["✓"] = False
-            item["Note"] = ""
+    for k in st.session_state.data:
+        for i in st.session_state.data[k]:
+            i["✓"] = False
+            i["Note"] = ""
 
-# Interfaccia
-tab_nomi = list(st.session_state.data.keys())
-scelta = st.radio("Seleziona il Registro:", tab_nomi, horizontal=True)
+scelta = st.radio("Seleziona:", list(st.session_state.data.keys()), horizontal=True)
 
-st.subheader(f"Lista per {scelta}")
-
-# Editor Tabella
 df = pd.DataFrame(st.session_state.data[scelta])
 edited_df = st.data_editor(
     df,
-    column_config={
-        "✓": st.column_config.CheckboxColumn("Fatto", default=False),
-        "Note": st.column_config.TextColumn("Note (es. mancanze)", width="large")
-    },
-    disabled=["Alimento", "In Linea", "Scorta", "Regola"],
+    column_config={"✓": st.column_config.CheckboxColumn("✓", default=False)},
+    disabled=["Alimento", "Prodotto", "Linea", "Scorta", "Regola"],
     hide_index=True,
     use_container_width=True,
     key=f"editor_{scelta}"
 )
 
-# Pulsante di salvataggio
-if st.button("✅ CONFERMA E SALVA"):
+if st.button("✅ SALVA AGGIORNAMENTO"):
     st.session_state.data[scelta] = edited_df.to_dict('records')
-    st.balloons()
-    st.success("Ottimo! I dati sono stati aggiornati.")
+    st.success("Salvato!")
 
-st.markdown("---")
-if st.button("🗑️ AZZERA TUTTO (Reset Giornaliero)"):
+if st.button("🗑️ RESET"):
     st.session_state.clear()
     st.rerun()
