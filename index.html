@@ -83,8 +83,92 @@
         
         /* GRIGLIA FRIGORIFERI E TABELLE */
         .card { background: var(--card); border-radius: 16px; border: 1px solid var(--border); box-shadow: 0 4px 15px rgba(0,0,0,0.03); overflow: hidden; display: flex; flex-direction: column; position: relative; animation: fadeIn 0.3s ease; height: max-content; }
+    <style>
+        :root {
+            --primary: #0f172a; --accent: #38bdf8; --success: #10b981;
+            --danger: #ef4444; --warning: #f59e0b; --bg: #f8fafc;
+            --card: #ffffff; --text: #1e293b; --text-muted: #64748b;
+            --border: #e2e8f0; --sidebar-w: 260px;
+            --safe-top: env(safe-area-inset-top, 0px); --safe-bottom: env(safe-area-inset-bottom, 0px);
+        }
+
+        [data-theme="dark"] {
+            --bg: #020617; --card: #1e293b; --text: #f8fafc;
+            --text-muted: #94a3b8; --border: #334155; --primary: #f8fafc;
+        }
+
+        /* RESET GLOBALE E FIX ALTEZZA */
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; margin: 0; padding: 0; }
+        
+        body { 
+            font-family: 'Urbanist', sans-serif; background: var(--bg); color: var(--text); 
+            display: flex; height: 100dvh; width: 100vw; overflow: hidden; overscroll-behavior: none; 
+            transition: background 0.3s, color 0.3s; 
+        }
+        body.edit-mode { background: repeating-linear-gradient(45deg, var(--bg), var(--bg) 10px, rgba(245, 158, 11, 0.05) 10px, rgba(245, 158, 11, 0.05) 20px); }
+
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+
+        /* SIDEBAR */
+        .sidebar { width: var(--sidebar-w); height: 100%; background: var(--primary); color: white; display: flex; flex-direction: column; transition: 0.3s; z-index: 1001; position: relative; box-shadow: 2px 0 15px rgba(0,0,0,0.1); }
+        .sidebar-header { padding: calc(20px + var(--safe-top)) 20px 20px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); flex-shrink: 0; }
+        .sidebar-header h1 { font-family: 'Poppins', sans-serif; font-size: 1.2rem; color: var(--accent); }
+        .nav-group { padding: 20px 0; flex-grow: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+        .nav-label { padding: 0 25px 10px; font-size: 10px; font-weight: 800; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 1px; }
+        .nav-item { padding: 12px 25px; display: flex; align-items: center; gap: 12px; cursor: pointer; color: rgba(255,255,255,0.7); font-weight: 600; transition: 0.2s; font-size: 14px; }
+        .nav-item i { width: 20px; text-align: center; font-size: 16px; }
+        .nav-item:hover { background: rgba(255,255,255,0.05); color: white; }
+        .nav-item.active { background: var(--accent); color: var(--primary); font-weight: 800; }
+        .sidebar-footer { padding: 15px; border-top: 1px solid rgba(255,255,255,0.1); padding-bottom: calc(15px + var(--safe-bottom)); flex-shrink: 0; }
+        .nav-item.edit-btn { color: var(--warning); border-radius: 10px; justify-content: center; background: rgba(245, 158, 11, 0.1); }
+
+        /* HEADER E AREA PRINCIPALE */
+        main { flex: 1; display: flex; flex-direction: column; height: 100dvh; width: calc(100vw - var(--sidebar-w)); position: relative; }
+        .top-bar { height: calc(65px + var(--safe-top)); background: var(--card); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; padding: var(--safe-top) 20px 0; z-index: 10; flex-shrink: 0; }
+        .view-title { font-weight: 800; font-size: 1.2rem; display: flex; align-items: center; gap: 10px; }
+        .btn-icon { background: var(--bg); border: 1px solid var(--border); color: var(--text); width: 40px; height: 40px; border-radius: 10px; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: 0.2s; font-size: 16px; flex-shrink: 0; }
+
+        /* TOOLBAR (CARTELLE E RICERCA) */
+        .toolbar { background: var(--card); border-bottom: 1px solid var(--border); padding: 10px 15px; display: flex; flex-direction: column; gap: 10px; z-index: 9; flex-shrink: 0; }
+        .folders-nav { display: flex; overflow-x: auto; gap: 8px; scrollbar-width: none; -webkit-overflow-scrolling: touch; padding-bottom: 5px; }
+        .folders-nav::-webkit-scrollbar { display: none; }
+        .folder-tab { padding: 8px 16px; border-radius: 8px; font-size: 12px; font-weight: 800; white-space: nowrap; cursor: pointer; color: var(--text-muted); transition: 0.2s; border: 1px solid var(--border); background: var(--bg); display: flex; align-items: center; gap: 6px; }
+        .folder-tab.active { background: var(--primary); color: white; border-color: var(--primary); }
+        .search-bar { width: 100%; padding: 10px 15px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-family: inherit; font-size: 13px; }
+        .search-bar:focus { border-color: var(--accent); }
+
+        /* SCORRIMENTO PRINCIPALE CON SUPER-BUFFER (Anti blocco tasti) */
+        .content-scroll { 
+            flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; 
+            padding: 15px; 
+            padding-bottom: calc(200px + var(--safe-bottom)); 
+            display: flex; flex-direction: column; gap: 20px; 
+        }
+
+        @media (min-width: 900px) { 
+            .content-scroll { display: grid; grid-template-columns: repeat(2, 1fr); align-content: start; padding: 25px; padding-bottom: 150px; } 
+            .toolbar { flex-direction: row; align-items: center; justify-content: space-between; } 
+            .search-bar { width: 300px; } 
+        }
+        @media (min-width: 1400px) { .content-scroll { grid-template-columns: repeat(3, 1fr); } }
+        
+        /* GRIGLIA FRIGORIFERI E TABELLE */
+        .card { 
+            background: var(--card); border-radius: 16px; border: 1px solid var(--border); 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03); overflow: hidden; display: flex; 
+            flex-direction: column; position: relative; animation: fadeIn 0.3s ease; 
+            flex-shrink: 0; /* ECCO IL FIX MAGICO! Niente più schiacciamenti. */
+            height: auto; 
+        }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .card-header { padding: 15px; color: white; display: flex; justify-content: space-between; align-items: center; font-weight: 800; font-size: 0.9rem; position: relative; }
+        
+        .card-header { 
+            padding: 15px; color: white; display: flex; justify-content: space-between; 
+            align-items: center; font-weight: 800; font-size: 0.9rem; position: relative; 
+            flex-shrink: 0; 
+        }
         .card-progress-bg { position: absolute; bottom: 0; left: 0; width: 100%; height: 4px; background: rgba(0,0,0,0.2); }
         .card-progress-fill { height: 100%; background: var(--success); width: 0%; transition: width 0.4s ease; }
 
@@ -109,22 +193,18 @@
         body.edit-mode .edit-tools { display: flex; }
         .btn-action { border: none; padding: 12px 15px; border-radius: 10px; font-weight: 800; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; font-size: 13px; width: 100%; transition: 0.2s;}
         
-        /* ================= IL FIX PER LE FINESTRE MODALI E LA TASTIERA ================= */
+        /* FIX FINESTRE E TASTIERA */
         .modal-overlay { 
             position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(3px); 
             display: none; justify-content: center; 
-            align-items: flex-end; /* FONDAMENTALE: Si allinea in basso, così la tastiera non la fa "esplodere" */
+            align-items: flex-end; /* Allinea al basso per la tastiera */
             z-index: 2000; padding: 15px; padding-bottom: calc(15px + var(--safe-bottom)); 
         }
-        
-        @media (min-width: 768px) {
-            .modal-overlay { align-items: center; } /* Su tablet/PC torna al centro perché lo schermo è grande */
-        }
+        @media (min-width: 768px) { .modal-overlay { align-items: center; } }
 
         .modal-box { 
             background: var(--card); width: 100%; max-width: 500px; border-radius: 20px; padding: 25px; 
-            max-height: 80dvh; /* Ridotto per dare spazio alla tastiera */
-            overflow-y: auto; -webkit-overflow-scrolling: touch; 
+            max-height: 80dvh; overflow-y: auto; -webkit-overflow-scrolling: touch; 
         }
         
         .input-group { margin-bottom: 15px; }
@@ -139,6 +219,7 @@
             .sidebar.open + .mobile-overlay { display: block; }
         }
     </style>
+
     
  
          
