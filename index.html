@@ -3,32 +3,151 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Registro Cucina Pro</title>
+    <title>Registro Cucina Professionale</title>
     <style>
-        :root { --green: #2e7d32; --red: #c62828; }
-        body { font-family: sans-serif; margin: 0; background: #f4f7f6; padding-bottom: 80px; }
-        header { background: #333; color: white; text-align: center; padding: 15px; font-weight: bold; font-size: 18px; }
-        .tabs { display: flex; background: white; overflow-x: auto; border-bottom: 1px solid #ddd; position: sticky; top: 0; z-index: 10; }
-        .tab { flex: 1; padding: 15px 5px; text-align: center; cursor: pointer; font-size: 10px; font-weight: bold; color: #666; border-bottom: 3px solid transparent; white-space: nowrap; min-width: 80px; }
-        .tab.active { color: var(--green); border-bottom-color: var(--green); background: #f9f9f9; }
-        .section { display: none; padding: 10px; }
+        :root { 
+            --primary: #2c3e50; 
+            --green-done: #2e7d32; 
+            --bg-body: #f8f9fa;
+            --header-pizze: #e67e22;
+            --header-fritti: #c0392b;
+            --header-ass: #2980b9;
+        }
+        body { 
+            font-family: -apple-system, sans-serif; 
+            margin: 0; 
+            background: var(--bg-body); 
+            padding-bottom: 100px;
+            user-select: none;
+        }
+        header { 
+            background: var(--primary); 
+            color: white; 
+            text-align: center; 
+            padding: 18px; 
+            font-weight: 800; 
+            font-size: 20px;
+            letter-spacing: 1px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+        .tabs { 
+            display: flex; 
+            background: white; 
+            position: sticky; 
+            top: 0; 
+            z-index: 100; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            overflow-x: auto;
+        }
+        .tab { 
+            flex: 1; 
+            padding: 16px 10px; 
+            text-align: center; 
+            cursor: pointer; 
+            font-size: 11px; 
+            font-weight: bold; 
+            color: #7f8c8d; 
+            border-bottom: 3px solid transparent; 
+            transition: 0.3s;
+            min-width: 90px;
+        }
+        .tab.active { 
+            color: var(--primary); 
+            border-bottom-color: var(--primary); 
+            background: #fdfdfd;
+        }
+        .content { padding: 12px; }
+        .section { display: none; animation: fadeIn 0.4s; }
         .section.active { display: block; }
-        .card { background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); overflow: hidden; margin-bottom: 20px; }
-        .card-header { background: #444; padding: 8px 12px; font-size: 12px; font-weight: bold; color: #fff; text-transform: uppercase; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .card { 
+            background: white; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05); 
+            margin-bottom: 20px; 
+            overflow: hidden; 
+            border: 1px solid #dee2e6;
+        }
+        .card-header { 
+            padding: 12px 15px; 
+            font-size: 13px; 
+            font-weight: bold; 
+            color: white; 
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .header-ass { background: var(--header-ass); }
+        .header-pizze { background: var(--header-pizze); }
+        .header-fritti { background: var(--header-fritti); }
+        .header-gen { background: #555; }
+
         table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-        th { background: #f8f8f8; padding: 8px 5px; text-align: left; font-size: 10px; color: #666; border-bottom: 1px solid #ddd; }
-        td { padding: 8px 5px; border-bottom: 1px solid #eee; font-size: 13px; vertical-align: middle; word-wrap: break-word; }
-        .col-prod { width: 35%; font-weight: bold; }
-        .col-std { width: 20%; font-size: 11px; color: #777; }
-        .col-note { width: 30%; }
-        .col-check { width: 15%; text-align: center; }
-        input[type="checkbox"] { transform: scale(1.6); }
-        .note-input { width: 100%; border: 1px solid #ccc; border-radius: 4px; padding: 5px; font-size: 12px; box-sizing: border-box; }
-        tr.done { background-color: #e8f5e9 !important; color: #2e7d32; opacity: 0.7; }
-        .footer { position: fixed; bottom: 0; width: 100%; background: white; display: flex; padding: 10px; gap: 10px; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); box-sizing: border-box; }
-        button { flex: 1; padding: 15px; border: none; border-radius: 6px; font-weight: bold; font-size: 14px; }
-        .btn-reset { background: #f5f5f5; color: #d32f2f; border: 1px solid #ddd; }
-        .btn-save { background: var(--green); color: white; }
+        th { 
+            background: #f1f3f5; 
+            padding: 10px 5px; 
+            text-align: left; 
+            font-size: 10px; 
+            color: #495057; 
+            border-bottom: 1px solid #dee2e6;
+        }
+        td { 
+            padding: 12px 8px; 
+            border-bottom: 1px solid #f1f3f5; 
+            font-size: 14px; 
+            vertical-align: middle; 
+            word-wrap: break-word;
+        }
+        .col-prod { width: 38%; font-weight: 600; color: #2c3e50; }
+        .col-std { width: 18%; font-size: 11px; color: #868e96; line-height: 1.2; }
+        .col-note { width: 32%; }
+        .col-check { width: 12%; text-align: center; }
+
+        .note-input { 
+            width: 100%; 
+            border: 1px solid #ced4da; 
+            border-radius: 6px; 
+            padding: 8px; 
+            font-size: 12px; 
+            box-sizing: border-box;
+            background: #fff;
+            transition: 0.2s;
+        }
+        .note-input:focus { border-color: var(--primary); outline: none; background: #fdfdfd; }
+
+        input[type="checkbox"] { 
+            width: 22px; 
+            height: 22px; 
+            cursor: pointer; 
+            accent-color: var(--green-done);
+        }
+
+        tr.done { background-color: #e8f5e9 !important; }
+        tr.done .col-prod { color: var(--green-done); text-decoration: line-through; opacity: 0.6; }
+
+        .footer { 
+            position: fixed; 
+            bottom: 0; 
+            width: 100%; 
+            background: white; 
+            display: flex; 
+            padding: 15px; 
+            gap: 12px; 
+            box-shadow: 0 -4px 15px rgba(0,0,0,0.1); 
+            box-sizing: border-box; 
+        }
+        button { 
+            flex: 1; 
+            padding: 16px; 
+            border: none; 
+            border-radius: 10px; 
+            font-weight: bold; 
+            font-size: 15px; 
+            transition: 0.2s;
+        }
+        button:active { transform: scale(0.98); }
+        .btn-reset { background: #f8f9fa; color: #e74c3c; border: 1px solid #dee2e6; }
+        .btn-save { background: var(--green-done); color: white; box-shadow: 0 4px 6px rgba(46, 125, 50, 0.2); }
     </style>
 </head>
 <body>
@@ -44,79 +163,184 @@
 
 <div class="content">
     <div id="tab1" class="section active">
-        <div class="card"><div class="card-header">FRIGO ASSEMBLAGGIO</div><table id="table-ass"></table></div>
-        <div class="card"><div class="card-header">FRIGO PIZZE</div><table id="table-piz"></table></div>
-        <div class="card"><div class="card-header">FRIGO FRITTI</div><table id="table-fri"></table></div>
+        <div class="card">
+            <div class="card-header header-ass">FRIGO ASSEMBLAGGIO</div>
+            <table id="table-ass"></table>
+        </div>
+        <div class="card">
+            <div class="card-header header-pizze">FRIGO PIZZE</div>
+            <table id="table-piz"></table>
+        </div>
+        <div class="card">
+            <div class="card-header header-fritti">FRIGO FRITTI</div>
+            <table id="table-fri"></table>
+        </div>
     </div>
-    <div id="tab2" class="section"><div class="card"><div class="card-header">VENERDÌ</div><table id="table-tab2"></table></div></div>
-    <div id="tab3" class="section"><div class="card"><div class="card-header">SABATO / DOMENICA</div><table id="table-tab3"></table></div></div>
-    <div id="tab4" class="section"><div class="card"><div class="card-header">MAGAZZINO</div><table id="table-tab4"></table></div></div>
+
+    <div id="tab2" class="section">
+        <div class="card">
+            <div class="card-header header-gen">FRIGO PRINCIPALE (VENERDÌ)</div>
+            <table id="table-ven"></table>
+        </div>
+    </div>
+
+    <div id="tab3" class="section">
+        <div class="card">
+            <div class="card-header header-gen">FRIGO PRINCIPALE (SAB/DOM)</div>
+            <table id="table-sab"></table>
+        </div>
+    </div>
+
+    <div id="tab4" class="section">
+        <div class="card">
+            <div class="card-header header-gen">MAGAZZINO</div>
+            <table id="table-mag"></table>
+        </div>
+    </div>
 </div>
 
 <div class="footer">
-    <button class="btn-reset" onclick="resetForm()">RESET</button>
-    <button class="btn-save" onclick="alert('Salvato!')">SALVA</button>
+    <button class="btn-reset" onclick="resetForm()">RESET GIORNALIERO</button>
+    <button class="btn-save" onclick="alert('Dati salvati sul telefono!')">SALVA MODIFICHE</button>
 </div>
-
 <script>
-    // --- I DATI VERRANNO INSERITI QUI NEL PROSSIMO MESSAGGIO ---
     const inventory = {
-        // FRIGO ASSEMBLAGGIO
+        // LUNEDI / GIOVEDI - FRIGO ASSEMBLAGGIO
         ass: [
-            {n:"Ventricina",l:"1/6",s:"-"},{n:"Basilico",l:"1/6",s:"-"},{n:"Pecorino",l:"1/6",s:"-"},
-            {n:"Rughetta",l:"2 conf",s:"-"},{n:"Crudo vasch.",l:"1 vas",s:"-"}
+            {n:"Ventricina", l:"1/6", s:"-"},
+            {n:"Basilico", l:"1/6", s:"-"},
+            {n:"Pecorino", l:"1/6", s:"-"},
+            {n:"Rughetta", l:"2 conf", s:"-"},
+            {n:"Prosciutto crudo", l:"1 vas", s:"-"}
         ],
-        // FRIGO PIZZE
+        // LUNEDI / GIOVEDI - FRIGO PIZZE
         piz: [
-            {n:"Fiori zucca",l:"1/3",s:"-"},{n:"Pollo cacc.",l:"1/3",s:"-"},{n:"Patatine fritte",l:"1/3",s:"-"},
-            {n:"Salvia",l:"mazzo",s:"-"},{n:"Cipolla",l:"1/",s:"-"},{n:"Nduja",l:"-",s:"-"},
-            {n:"Tonno",l:"-",s:"-"},{n:"Porcini",l:"-",s:"-"},{n:"Porchetta",l:"-",s:"-"},
-            {n:"No lattosio",l:"-",s:"-"},{n:"Olive leccino",l:"-",s:"-"},{n:"Wurstel",l:"-",s:"-"},
-            {n:"Broccoletti",l:"-",s:"-"},{n:"Provola",l:"-",s:"-"},{n:"Grana scaglie",l:"-",s:"-"},
-            {n:"Pere",l:"-",s:"-"},{n:"Patate forno",l:"-",s:"-"},{n:"Pachino",l:"-",s:"-"},
-            {n:"Melanzane",l:"-",s:"-"},{n:"Peperoni",l:"-",s:"-"},{n:"Zucchine",l:"-",s:"-"},
-            {n:"Salsiccia",l:"-",s:"-"},{n:"Funghi",l:"-",s:"-"},{n:"Olive nere",l:"-",s:"-"},
-            {n:"Carciofi olio",l:"-",s:"-"},{n:"Uova sode",l:"-",s:"-"},{n:"Guanciale",l:"-",s:"-"},
-            {n:"Gorgonzola",l:"-",s:"-"},{n:"Bufala",l:"-",s:"-"},{n:"Carciofi rip.",l:"-",s:"-"},{n:"Alici",l:"-",s:"-"}
+            {n:"Fiori zucca", l:"1/3", s:"-"},
+            {n:"Pollo cacciatora", l:"1/3", s:"-"},
+            {n:"Patatine fritte", l:"1/3", s:"-"},
+            {n:"Salvia", l:"1 mazzo", s:"-"},
+            {n:"Cipolla", l:"1/", s:"-"},
+            {n:"Nduja", l:"-", s:"-"},
+            {n:"Tonno", l:"-", s:"-"},
+            {n:"Porcini", l:"-", s:"-"},
+            {n:"Porchetta", l:"-", s:"-"},
+            {n:"No lattosio", l:"-", s:"-"},
+            {n:"Olive leccino", l:"-", s:"-"},
+            {n:"Wurstel", l:"-", s:"-"},
+            {n:"Broccoletti", l:"-", s:"-"},
+            {n:"Provola", l:"-", s:"-"},
+            {n:"Grana a scaglie", l:"-", s:"-"},
+            {n:"Pere", l:"-", s:"-"},
+            {n:"Patate forno", l:"-", s:"-"},
+            {n:"Pachino", l:"-", s:"-"},
+            {n:"Melanzane", l:"-", s:"-"},
+            {n:"Peperoni", l:"-", s:"-"},
+            {n:"Zucchine", l:"-", s:"-"},
+            {n:"Salsiccia", l:"-", s:"-"},
+            {n:"Funghi", l:"-", s:"-"},
+            {n:"Olive nere", l:"-", s:"-"},
+            {n:"Carciofi olio", l:"-", s:"-"},
+            {n:"Uova sode", l:"-", s:"-"},
+            {n:"Guanciale", l:"-", s:"-"},
+            {n:"Gorgonzola", l:"-", s:"-"},
+            {n:"Bufala", l:"-", s:"-"},
+            {n:"Carciofi ripassati", l:"-", s:"-"},
+            {n:"Alici", l:"-", s:"-"}
         ],
-        // FRIGO FRITTI
+        // LUNEDI / GIOVEDI - FRIGO FRITTI
         fri: [
-            {n:"Fiori zucca",l:"-",s:"-"},{n:"Olive ascol.",l:"10kg",s:"2x5kg"},{n:"Baccalà",l:"-",s:"-"},
-            {n:"Patatine fritte",l:"-",s:"-"},{n:"Ajo ojo",l:"-",s:"-"},{n:"Amatriciana",l:"-",s:"-"},
-            {n:"Carbonara",l:"-",s:"-"},{n:"Cacio e pepe",l:"-",s:"-"},{n:"Partenopea",l:"-",s:"-"},
-            {n:"Nerone",l:"-",s:"-"},{n:"Vaccinara",l:"-",s:"-"},{n:"Ragù (IF 1)",l:"domani",s:"-"},
-            {n:"Carciofi cong.",l:"ripassati",s:"-"},{n:"Piselli",l:"-",s:"-"}
+            {n:"Fiori di zucca", l:"-", s:"-"},
+            {n:"Olive ascolane", l:"10 kg", s:"2x5kg"},
+            {n:"Baccalà", l:"-", s:"-"},
+            {n:"Patatine fritte", l:"-", s:"-"},
+            {n:"Ajo ojo", l:"-", s:"-"},
+            {n:"Amatriciana", l:"-", s:"-"},
+            {n:"Carbonara", l:"-", s:"-"},
+            {n:"Cacio e pepe", l:"-", s:"-"},
+            {n:"Partenopea", l:"-", s:"-"},
+            {n:"Nerone", l:"-", s:"-"},
+            {n:"Vaccinara", l:"-", s:"-"},
+            {n:"Ragù if 1", l:"da fare", s:"domani"},
+            {n:"Carciofi cong.", l:"ripassati", s:"-"},
+            {n:"Piselli", l:"-", s:"-"}
         ],
-        // ALTRE TABELLE (GIÀ ESISTENTI)
-        tab2: [{n:"Fiori zucca",l:"1/3",s:"-"},{n:"Mozzarella",l:"1/1",s:"60kg"}],
-        tab3: [{n:"Fiori zucca",l:"1/3",s:"-"},{n:"Mozzarella",l:"1/1",s:"120kg"}],
-        tab4: [{n:"Olio EVO",l:"<2lt",s:"-"},{n:"Olio Semi",l:"<5lt",s:"-"},{n:"Sale/Pepe",l:"<2kg",s:"-"}],
+        // VENERDI - FRIGO PRINCIPALE
+        ven: [
+            {n:"Fiori di zucca", l:"1/3", s:"1"},
+            {n:"Rughetta", l:"1/3", s:"3 etti"},
+            {n:"Mozz. no lattosio", l:"1/3", s:"1,5 kg"},
+            {n:"Pecorino gratt.", l:"1/6", s:"1 kg"},
+            {n:"Mozzarella julienne", l:"1/1", s:"60 KG"}
+        ],
+        // SABATO E DOMENICA - FRIGO PRINCIPALE
+        sab: [
+            {n:"Fiori di zucca", l:"1/3", s:"1"},
+            {n:"Patate al forno", l:"1/3", s:"3"},
+            {n:"Funghi affettati", l:"1/1", s:"4"},
+            {n:"Prosciutto crudo", l:"1/3", s:"3"},
+            {n:"Mozzarella julienne", l:"1/1", s:"120 KG"},
+            {n:"Sugo", l:"1/1", s:"4"}
+        ],
+        // MAGAZZINO
+        mag: [
+            {n:"Carciofi/Olive/Alici", l:"Apertura", s:"-"},
+            {n:"Olio EVO", l:"< 2lt", s:"-"},
+            {n:"Olio di semi", l:"< 5lt", s:"-"},
+            {n:"Sale/Pepe/Origano", l:"< 2kg", s:"-"},
+            {n:"Mozz. no lattosio", l:"Apertura", s:"-"}
+        ]
     };
 
     function render() {
         for (let key in inventory) {
             const table = document.getElementById('table-' + key);
-            if(!table) continue;
-            table.innerHTML = `<tr><th class="col-prod">Prodotto</th><th class="col-std">L/S</th><th class="col-note">Note</th><th class="col-check">✓</th></tr>`;
+            if (!table) continue;
+            
+            table.innerHTML = `<tr>
+                <th class="col-prod">PRODOTTO</th>
+                <th class="col-std">L / S</th>
+                <th class="col-note">NOTE</th>
+                <th class="col-check">✓</th>
+            </tr>`;
+            
             inventory[key].forEach((item, idx) => {
-                const rowId = key + idx;
-                const saved = JSON.parse(localStorage.getItem(rowId) || '{"c":false,"n":""}');
-                table.innerHTML += `
-                    <tr id="tr-${rowId}" class="${saved.c?'done':''}">
-                        <td class="col-prod">${item.n}</td>
-                        <td class="col-std">${item.l}<br>${item.s}</td>
-                        <td class="col-note"><input type="text" class="note-input" placeholder="..." value="${saved.n}" oninput="upd('${rowId}','n',this.value)"></td>
-                        <td class="col-check"><input type="checkbox" ${saved.c?'checked':''} onchange="upd('${rowId}','c',this.checked)"></td>
-                    </tr>`;
+                const rowId = key + '-' + idx;
+                const savedStr = localStorage.getItem(rowId) || '{"c":false,"n":""}';
+                const saved = JSON.parse(savedStr);
+                
+                const tr = document.createElement('tr');
+                tr.id = 'tr-' + rowId;
+                if (saved.c) tr.className = 'done';
+                
+                tr.innerHTML = `
+                    <td class="col-prod">${item.n}</td>
+                    <td class="col-std">${item.l}<br>${item.s}</td>
+                    <td class="col-note">
+                        <input type="text" class="note-input" placeholder="..." value="${saved.n}" oninput="upd('${rowId}', 'n', this.value)">
+                    </td>
+                    <td class="col-check">
+                        <input type="checkbox" ${saved.c ? 'checked' : ''} onchange="upd('${rowId}', 'c', this.checked)">
+                    </td>
+                `;
+                table.appendChild(tr);
             });
         }
     }
 
     function upd(id, key, val) {
-        let data = JSON.parse(localStorage.getItem(id) || '{"c":false,"n":""}');
+        const savedStr = localStorage.getItem(id) || '{"c":false,"n":""}';
+        let data = JSON.parse(savedStr);
         data[key] = val;
         localStorage.setItem(id, JSON.stringify(data));
-        if(key === 'c') document.getElementById('tr-'+id).classList.toggle('done', val);
+        
+        if (key === 'c') {
+            const row = document.getElementById('tr-' + id);
+            if (val) {
+                row.classList.add('done');
+            } else {
+                row.classList.remove('done');
+            }
+        }
     }
 
     function openTab(evt, tabId) {
@@ -127,8 +351,12 @@
     }
 
     function resetForm() {
-        if(confirm("Azzerare tutto?")) { localStorage.clear(); render(); }
+        if(confirm("Sei sicuro di voler azzerare tutte le spunte e le note di oggi?")) { 
+            localStorage.clear(); 
+            render(); 
+        }
     }
+
     render();
 </script>
 </body>
