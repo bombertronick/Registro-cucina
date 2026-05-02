@@ -2,605 +2,651 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Cucina Manager Ultra-Pro</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Cucina Manager Enterprise</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;600;800&family=Poppins:wght@600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
     <style>
         :root {
-            /* Palette Light Mode */
-            --bg: #f4f7f6;
+            /* Colori base (Light Mode) */
+            --primary: #0f172a;
+            --accent: #38bdf8;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --bg: #f8fafc;
             --card: #ffffff;
-            --text: #2d3436;
-            --text-light: #636e72;
-            --primary: #0984e3;
-            --success: #00b894;
-            --danger: #d63031;
-            --warning: #fdcb6e;
-            --accent: #6c5ce7;
-            --border: #dfe6e9;
-            --shadow: 0 4px 15px rgba(0,0,0,0.08);
-            --header-h: 60px;
+            --text: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --sidebar-w: 260px;
+            --safe-top: env(safe-area-inset-top, 0px);
+            --safe-bottom: env(safe-area-inset-bottom, 0px);
         }
 
         [data-theme="dark"] {
-            /* Palette Dark Mode */
-            --bg: #1e272e;
-            --card: #2f3640;
-            --text: #f5f6fa;
-            --text-light: #dcdde1;
-            --primary: #74b9ff;
-            --success: #55efc4;
-            --danger: #ff7675;
-            --warning: #ffeaa7;
-            --border: #353b48;
-            --shadow: 0 4px 20px rgba(0,0,0,0.4);
+            /* Colori Dark Mode */
+            --bg: #020617;
+            --card: #1e293b;
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --primary: #f8fafc;
         }
 
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        /* RESET GLOBALE */
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; margin: 0; padding: 0; }
+        
         body { 
-            margin: 0; 
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
-            background: var(--bg); 
-            color: var(--text); 
-            transition: all 0.3s ease; 
-            overflow-x: hidden;
-            padding-bottom: 110px; /* Spazio per il footer */
+            font-family: 'Urbanist', sans-serif; background: var(--bg); color: var(--text);
+            display: flex; height: 100vh; overflow: hidden; overscroll-behavior: none; 
+            transition: background 0.3s, color 0.3s;
         }
+        
+        /* Modalità Modifica Attiva */
+        body.edit-mode { background: repeating-linear-gradient(45deg, var(--bg), var(--bg) 10px, rgba(245, 158, 11, 0.05) 10px, rgba(245, 158, 11, 0.05) 20px); }
 
-        /* Edit Mode Overlay */
-        body.edit-mode { background: repeating-linear-gradient(45deg, var(--bg), var(--bg) 10px, rgba(253, 203, 110, 0.05) 10px, rgba(253, 203, 110, 0.05) 20px); }
-
-        /* Scrollbar Personalizzata */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: var(--bg); }
+        /* SCROLLBAR INVISIBILE/MINIMALE */
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
 
-        /* Header e Top Nav */
-        header { 
-            height: var(--header-h);
-            background: var(--card);
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 0 15px; border-bottom: 1px solid var(--border);
-            position: sticky; top: 0; z-index: 1000; box-shadow: var(--shadow);
+        /* ================= SIDEBAR ================= */
+        .sidebar {
+            width: var(--sidebar-w); height: 100%; background: var(--primary); color: white; 
+            display: flex; flex-direction: column; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1001; position: relative; box-shadow: 2px 0 15px rgba(0,0,0,0.1);
         }
-        .logo { font-weight: 800; font-size: 1.1rem; color: var(--primary); display: flex; align-items: center; gap: 8px; }
-        .nav-btns { display: flex; gap: 8px; }
+
+        .sidebar-header { padding: calc(20px + var(--safe-top)) 20px 20px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .sidebar-header h1 { font-family: 'Poppins', sans-serif; font-size: 1.2rem; color: var(--accent); }
+
+        .nav-group { padding: 20px 0; flex-grow: 1; overflow-y: auto; }
+        .nav-label { padding: 0 25px 10px; font-size: 10px; font-weight: 800; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 1px; }
         
-        .btn-icon { 
-            background: var(--bg); border: 1px solid var(--border); color: var(--text);
-            width: 40px; height: 40px; border-radius: 10px; cursor: pointer;
-            display: flex; align-items: center; justify-content: center; transition: 0.2s;
+        .nav-item { 
+            padding: 12px 25px; display: flex; align-items: center; gap: 12px; cursor: pointer;
+            color: rgba(255,255,255,0.7); font-weight: 600; transition: 0.2s; font-size: 14px;
         }
-        .btn-icon.active { background: var(--warning); border-color: var(--warning); color: #000; }
-
-        /* Tabs System */
-        .tabs-nav { 
-            display: flex; background: var(--card); overflow-x: auto; 
-            padding: 5px; gap: 5px; position: sticky; top: var(--header-h); z-index: 999;
-            border-bottom: 1px solid var(--border); scrollbar-width: none;
-        }
-        .tabs-nav::-webkit-scrollbar { display: none; }
-        .tab { 
-            padding: 10px 20px; border-radius: 8px; font-size: 13px; font-weight: 700;
-            white-space: nowrap; cursor: pointer; color: var(--text-light); transition: 0.2s;
-            display: flex; align-items: center; gap: 6px;
-        }
-        .tab.active { background: var(--primary); color: white; box-shadow: 0 4px 10px rgba(9, 132, 227, 0.3); }
-
-        /* Progress Bar */
-        .progress-container { height: 4px; background: var(--border); width: 100%; position: sticky; top: calc(var(--header-h) + 48px); z-index: 998; }
-        .progress-bar { height: 100%; background: var(--success); width: 0%; transition: width 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-
-        /* Card e Tabelle */
-        .container { padding: 15px; }
-        .section-card { 
-            background: var(--card); border-radius: 16px; margin-bottom: 20px;
-            box-shadow: var(--shadow); border: 1px solid var(--border); overflow: hidden;
-            animation: slideUp 0.4s ease-out;
-        }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-
-        .section-header { 
-            padding: 15px; color: white; display: flex; justify-content: space-between; align-items: center;
-            background: var(--secondary); font-weight: 800; font-size: 0.9rem; letter-spacing: 0.5px;
-        }
+        .nav-item i { width: 20px; text-align: center; font-size: 16px; }
+        .nav-item:hover { background: rgba(255,255,255,0.05); color: white; }
+        .nav-item.active { background: var(--accent); color: var(--primary); font-weight: 800; }
         
+        .sidebar-footer { padding: 15px; border-top: 1px solid rgba(255,255,255,0.1); padding-bottom: calc(15px + var(--safe-bottom)); }
+        .nav-item.edit-btn { color: var(--warning); border-radius: 10px; justify-content: center; background: rgba(245, 158, 11, 0.1); }
+
+        /* ================= MAIN AREA ================= */
+        main { flex-grow: 1; display: flex; flex-direction: column; height: 100%; position: relative; width: calc(100% - var(--sidebar-w)); }
+
+        .top-bar { 
+            height: calc(70px + var(--safe-top)); background: var(--card); border-bottom: 1px solid var(--border);
+            display: flex; justify-content: space-between; align-items: center; padding: var(--safe-top) 20px 0; z-index: 10;
+        }
+        .view-title { font-weight: 800; font-size: 1.2rem; display: flex; align-items: center; gap: 10px; }
+        
+        .btn-icon { background: var(--bg); border: 1px solid var(--border); color: var(--text); width: 40px; height: 40px; border-radius: 10px; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: 0.2s; font-size: 16px; }
+        .btn-icon:active { transform: scale(0.9); }
+
+        /* Griglia contenuti */
+        .content-scroll { flex-grow: 1; overflow-y: auto; padding: 20px; display: grid; grid-template-columns: 1fr; gap: 20px; align-content: start; }
+        @media (min-width: 900px) { .content-scroll { grid-template-columns: repeat(2, 1fr); padding: 30px; } }
+        @media (min-width: 1400px) { .content-scroll { grid-template-columns: repeat(3, 1fr); } }
+
+        /* ================= CARDS E TABELLE ================= */
+        .card { background: var(--card); border-radius: 16px; border: 1px solid var(--border); box-shadow: 0 4px 15px rgba(0,0,0,0.03); overflow: hidden; display: flex; flex-direction: column; position: relative; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .card-header { padding: 15px; color: white; display: flex; justify-content: space-between; align-items: center; font-weight: 800; font-size: 0.9rem; position: relative; }
+        .card-progress-bg { position: absolute; bottom: 0; left: 0; width: 100%; height: 4px; background: rgba(0,0,0,0.2); }
+        .card-progress-fill { height: 100%; background: var(--success); width: 0%; transition: width 0.4s ease; }
+
         table { width: 100%; border-collapse: collapse; }
-        td { padding: 12px 10px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+        td { padding: 12px 15px; border-bottom: 1px solid var(--border); vertical-align: middle; font-size: 14px; }
         
-        .col-info { width: 45%; }
-        .col-ls { width: 15%; font-size: 11px; font-weight: bold; color: var(--text-light); }
-        .col-note { width: 25%; }
-        .col-check { width: 15%; text-align: center; }
+        .prod-name { font-weight: 800; display: block; margin-bottom: 4px; font-size: 15px; }
+        .prod-meta { font-size: 11px; color: var(--text-muted); font-weight: 600; display: block; }
+        .role-badge { font-size: 9px; padding: 2px 6px; border-radius: 6px; background: var(--border); color: var(--text-muted); margin-left: 5px; vertical-align: middle; }
 
-        .prod-name { display: block; font-weight: 700; margin-bottom: 2px; }
-        .prod-meta { font-size: 10px; color: var(--text-light); text-transform: uppercase; }
+        .note-input { width: 100%; border: 1px solid var(--border); border-radius: 8px; padding: 10px; font-size: 13px; background: var(--bg); color: var(--text); font-family: inherit; transition: 0.2s; }
+        .note-input:focus { border-color: var(--accent); }
 
-        input.note-box { 
-            width: 100%; border: 1px solid var(--border); border-radius: 6px; padding: 6px;
-            font-size: 12px; background: var(--bg); color: var(--text);
-        }
-
-        /* Checkbox Custom */
-        .chk-container { display: block; position: relative; cursor: pointer; height: 30px; width: 30px; margin: 0 auto; }
-        .chk-container input { display: none; }
-        .checkmark { 
-            position: absolute; top: 0; left: 0; height: 30px; width: 30px; 
-            background: var(--border); border-radius: 8px; transition: 0.2s;
-        }
-        .chk-container:hover .checkmark { background: #ccc; }
-        .chk-container input:checked ~ .checkmark { background: var(--success); }
-        .checkmark:after { 
-            content: ""; position: absolute; display: none;
-            left: 11px; top: 6px; width: 6px; height: 12px;
-            border: solid white; border-width: 0 3px 3px 0; transform: rotate(45deg);
-        }
-        .chk-container input:checked ~ .checkmark:after { display: block; }
-
-        tr.is-done { opacity: 0.6; background: rgba(0, 184, 148, 0.05); }
+        /* CHECKBOX MAGICA (Adatta a dita unte) */
+        .chk-wrap { display: flex; justify-content: center; }
+        .chk-btn { width: 40px; height: 40px; border-radius: 12px; border: 2px solid var(--border); background: var(--bg); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.15s; color: transparent; }
+        .chk-btn.checked { background: var(--success); border-color: var(--success); color: white; transform: scale(1.05); }
+        
+        tr.is-done { opacity: 0.5; background: rgba(16, 185, 129, 0.05); }
         tr.is-done .prod-name { text-decoration: line-through; color: var(--success); }
-        tr.hidden { display: none; }
 
-        /* Modifica e Comandi */
-        .edit-tools { display: none; margin-top: 10px; border-top: 1px dashed var(--border); padding-top: 10px; gap: 5px; }
+        /* ================= STRUMENTI MODIFICA ================= */
+        .edit-tools { display: none; margin-top: 10px; gap: 5px; }
         body.edit-mode .edit-tools { display: flex; }
-        .btn-action { 
-            border: none; padding: 12px; border-radius: 12px; font-weight: 800; cursor: pointer;
-            display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 13px;
-        }
-        .btn-add { background: var(--primary); color: white; width: 100%; margin-top: 10px; }
-        .btn-delete { background: var(--danger); color: white; padding: 6px 10px; border-radius: 6px; font-size: 10px; }
+        .btn-action { border: none; padding: 12px 15px; border-radius: 10px; font-weight: 800; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; font-size: 13px; font-family: inherit; width: 100%; transition: 0.2s; }
+        .btn-action:active { transform: scale(0.95); }
 
-        /* Footer e Toolbar */
-        .footer-tools { 
-            position: fixed; bottom: 0; width: 100%; background: var(--card);
-            border-top: 1px solid var(--border); padding: 15px; display: grid;
-            grid-template-columns: 1fr 1fr; gap: 12px; box-shadow: 0 -5px 20px rgba(0,0,0,0.1); z-index: 1000;
-        }
+        /* ================= MODALS E OVERLAYS ================= */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(3px); display: none; justify-content: center; align-items: center; z-index: 2000; padding: 20px; }
+        .modal-box { background: var(--card); width: 100%; max-width: 500px; border-radius: 20px; padding: 25px; max-height: 90vh; overflow-y: auto; animation: scaleIn 0.2s; }
+        @keyframes scaleIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        
+        .input-group { margin-bottom: 15px; }
+        .input-group label { display: block; font-size: 11px; font-weight: 800; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; }
+        .input-group input, .input-group select { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 10px; font-size: 14px; background: var(--bg); color: var(--text); }
 
-        /* Modal Avanzati */
-        .modal-overlay { 
-            position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px);
-            display: none; justify-content: center; align-items: flex-end; z-index: 2000;
+        /* ================= MOBILE RESPONSIVE ================= */
+        @media (max-width: 768px) {
+            .sidebar { position: absolute; left: -100%; }
+            .sidebar.open { left: 0; }
+            main { width: 100%; }
+            .mobile-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; display: none; }
+            .sidebar.open + .mobile-overlay { display: block; }
         }
-        .modal-box { 
-            background: var(--card); width: 100%; max-width: 500px; border-radius: 20px 20px 0 0;
-            padding: 25px; animation: slideIn 0.3s ease-out;
-        }
-        @keyframes slideIn { from { transform: translateY(100%); } to { transform: translateY(0); } }
-
-        /* Ricettario e Info */
-        .info-btn { font-size: 16px; color: var(--primary); cursor: pointer; margin-left: 5px; }
-        .last-update { font-size: 9px; color: var(--text-light); text-align: center; margin-top: 5px; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <header>
-        <div class="logo">👨‍🍳 MANAGER <span id="sync-status" style="font-size:10px; color:var(--success);">●</span></div>
-        <div class="nav-btns">
-            <button class="btn-icon" onclick="toggleTheme()" id="btn-theme" title="Modalità Notte">🌙</button>
-            <button class="btn-icon" onclick="toggleFocusMode()" id="btn-focus" title="Nascondi Completati">👁️</button>
-            <button class="btn-icon" onclick="toggleEditMode()" id="btn-edit" title="Modifica Lista">✏️</button>
-            <button class="btn-icon" onclick="openSyncModal()" title="Condividi">🔄</button>
-        </div>
-    </header>
+    <div class="mobile-overlay" onclick="document.getElementById('sidebar').classList.remove('open')"></div>
 
-    <div class="tabs-nav" id="tabs-container">
-        </div>
-    <div class="progress-container">
-        <div class="progress-bar" id="main-progress"></div>
-    </div>
-
-    <div class="container" id="main-content">
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h1>CUCINA MANAGER <span>v3.0</span></h1>
         </div>
 
-    <div class="footer-tools">
-        <button class="btn-action" style="background: var(--bg); border: 1px solid var(--danger); color: var(--danger);" onclick="smartReset()">
-            🧹 AZZERA TUTTO
-        </button>
-        <button class="btn-action" style="background: var(--success); color: white;" onclick="alert('Salvataggio automatico attivo! Non perderai mai un dato.')">
-            💾 SALVATO
-        </button>
-        <div class="last-update" id="last-update-text" style="grid-column: span 2;">Ultima modifica: Ora</div>
+        <nav class="nav-group">
+            <div class="nav-label">Sedi / Schede</div>
+            <div id="tabs-menu">
+                </div>
+
+            <div style="margin-top: 30px;" class="nav-label">Filtra per Ruolo</div>
+            <div class="nav-item active" onclick="setRoleFilter('tutti', this)">
+                <i class="fa-solid fa-border-all"></i> Tutti i settori
+            </div>
+            <div class="nav-item" onclick="setRoleFilter('cucina', this)">
+                <i class="fa-solid fa-fire-burner"></i> Cucina / Fritti
+            </div>
+            <div class="nav-item" onclick="setRoleFilter('pizzeria', this)">
+                <i class="fa-solid fa-pizza-slice"></i> Pizzeria
+            </div>
+            <div class="nav-item" onclick="setRoleFilter('magazzino', this)">
+                <i class="fa-solid fa-box-open"></i> Magazzino
+            </div>
+
+            <div style="margin-top: 30px;" class="nav-label">Azioni Rapide</div>
+            <div class="nav-item" style="color: var(--accent);" onclick="openSyncModal()">
+                <i class="fa-solid fa-cloud-arrow-up"></i> Sincronizza Cloud
+            </div>
+            <div class="nav-item" style="color: var(--warning);" onclick="generateReport()">
+                <i class="fa-solid fa-clipboard-list"></i> Esporta Note / Spesa
+            </div>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="nav-item edit-btn" onclick="toggleEditMode()" id="sidebar-edit-status">
+                <i class="fa-solid fa-lock"></i> MODALITÀ CONSULTAZIONE
+            </div>
+        </div>
+    </aside>
+
+    <main>
+        <header class="top-bar">
+            <div class="view-title">
+                <button class="btn-icon" id="menu-btn" onclick="document.getElementById('sidebar').classList.toggle('open')">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <span id="header-title">Caricamento...</span>
+            </div>
+            
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <div id="sync-indicator" style="font-size: 10px; font-weight: 800; color: var(--success); display: none;">● CLOUD OK</div>
+                <button class="btn-icon" onclick="toggleTheme()" title="Cambia Tema"><i class="fa-solid fa-circle-half-stroke"></i></button>
+                <button class="btn-icon" style="color: var(--danger);" onclick="smartReset()" title="Nuovo Turno (Azzera)"><i class="fa-solid fa-rotate-left"></i></button>
+            </div>
+        </header>
+
+        <div class="content-scroll" id="main-content">
+            </div>
+    </main>
+
+    <div class="modal-overlay" id="modal-report">
+        <div class="modal-box" style="max-width: 600px;">
+            <h2 style="margin-top: 0; margin-bottom: 20px; font-weight: 800; display: flex; justify-content: space-between;">
+                📋 Report Note e Mancanti
+                <i class="fa-solid fa-xmark" style="cursor: pointer; color: var(--text-muted);" onclick="closeModals()"></i>
+            </h2>
+            
+            <div id="report-preview" style="background: var(--bg); padding: 15px; border-radius: 12px; font-size: 13px; max-height: 250px; overflow-y: auto; border: 1px solid var(--border); margin-bottom: 20px; white-space: pre-wrap; font-family: monospace;">
+                </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                <button class="btn-action" style="background: #25D366; color: white;" onclick="copyReportText()">
+                    <i class="fa-brands fa-whatsapp"></i> COPIA TESTO
+                </button>
+                <button class="btn-action" style="background: var(--primary); color: white;" onclick="downloadReportExcel()">
+                    <i class="fa-solid fa-file-excel"></i> SCARICA EXCEL (.csv)
+                </button>
+            </div>
+        </div>
     </div>
 
     <div class="modal-overlay" id="modal-tab">
         <div class="modal-box">
-            <h3 style="margin-top:0; color:var(--primary);">Gestione Scheda</h3>
-            <label style="font-size:12px; font-weight:bold; color:var(--text-light);">Nome Scheda</label>
-            <input type="text" id="input-tab-name" class="note-box" style="margin: 10px 0 20px; font-size:16px; padding:12px;" placeholder="es. LUNEDÌ">
-            
-            <div style="display:flex; gap:10px;">
-                <button class="btn-action" style="flex:1; background:var(--bg); border:1px solid var(--border); color:var(--text);" onclick="closeModals()">Annulla</button>
-                <button class="btn-action" style="flex:1; background:var(--primary); color:white;" onclick="saveTab()">Salva Scheda</button>
+            <h3 id="modal-tab-title" style="margin-top: 0; margin-bottom: 20px;">Nuova Sede / Scheda</h3>
+            <div class="input-group">
+                <label>Nome Sede (es. ROMA, PREP. MATTINA)</label>
+                <input type="text" id="input-tab-name" placeholder="Inserisci nome...">
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 25px;">
+                <button class="btn-action" style="background: var(--border); color: var(--text);" onclick="closeModals()">Annulla</button>
+                <button class="btn-action" style="background: var(--accent); color: var(--primary);" onclick="saveTab()">Salva</button>
             </div>
         </div>
     </div>
 
     <div class="modal-overlay" id="modal-section">
         <div class="modal-box">
-            <h3 style="margin-top:0; color:var(--primary);">Gestione Sezione/Frigo</h3>
-            <label style="font-size:12px; font-weight:bold; color:var(--text-light);">Nome Sezione</label>
-            <input type="text" id="input-section-name" class="note-box" style="margin: 10px 0 15px; font-size:16px; padding:12px;" placeholder="es. FRIGO FRITTI">
-            
-            <label style="font-size:12px; font-weight:bold; color:var(--text-light);">Colore Intestazione</label>
-            <select id="input-section-color" class="note-box" style="margin: 10px 0 20px; font-size:16px; padding:12px;">
-                <option value="#2d3436">Grigio Scuro (Standard)</option>
-                <option value="#0984e3">Blu (Frigo Pizze)</option>
-                <option value="#d63031">Rosso (Frigo Fritti)</option>
-                <option value="#e17055">Arancione (Assemblaggio)</option>
-                <option value="#00b894">Verde (Magazzino)</option>
-            </select>
-            
-            <div style="display:flex; gap:10px;">
-                <button class="btn-action" style="flex:1; background:var(--bg); border:1px solid var(--border); color:var(--text);" onclick="closeModals()">Annulla</button>
-                <button class="btn-action" style="flex:1; background:var(--primary); color:white;" onclick="saveSection()">Salva Sezione</button>
+            <h3 id="modal-section-title" style="margin-top: 0; margin-bottom: 20px;">Nuovo Frigorifero / Settore</h3>
+            <div class="input-group">
+                <label>Nome Settore (es. FRIGO PIZZE)</label>
+                <input type="text" id="input-section-name" placeholder="Nome...">
+            </div>
+            <div class="input-group">
+                <label>Colore Identificativo</label>
+                <select id="input-section-color">
+                    <option value="#0f172a">Grigio Scuro (Standard)</option>
+                    <option value="#0984e3">Blu (Pizzeria)</option>
+                    <option value="#d63031">Rosso (Cucina/Fritti)</option>
+                    <option value="#00b894">Verde (Magazzino/Freddo)</option>
+                    <option value="#f59e0b">Giallo (Assemblaggio)</option>
+                </select>
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 25px;">
+                <button class="btn-action" style="background: var(--border); color: var(--text);" onclick="closeModals()">Annulla</button>
+                <button class="btn-action" style="background: var(--accent); color: var(--primary);" onclick="saveSection()">Salva</button>
             </div>
         </div>
     </div>
 
     <div class="modal-overlay" id="modal-item">
         <div class="modal-box">
-            <h3 style="margin-top:0; color:var(--primary);">Gestione Prodotto</h3>
-            
-            <label style="font-size:12px; font-weight:bold; color:var(--text-light);">Nome Prodotto</label>
-            <input type="text" id="input-item-name" class="note-box" style="margin: 5px 0 15px; font-size:16px; padding:10px;" placeholder="es. Fiori di zucca">
-            
-            <div style="display:flex; gap:10px; margin-bottom:15px;">
-                <div style="flex:1;">
-                    <label style="font-size:12px; font-weight:bold; color:var(--text-light);">In Linea (L)</label>
-                    <input type="text" id="input-item-line" class="note-box" style="margin-top:5px; padding:10px;" placeholder="es. 1/3">
+            <h3 id="modal-item-title" style="margin-top: 0; margin-bottom: 20px;">Nuovo Prodotto</h3>
+            <div class="input-group">
+                <label>Nome Prodotto</label>
+                <input type="text" id="input-item-name" placeholder="es. Zucchine Julienne">
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <div class="input-group" style="flex:1;">
+                    <label>In Linea (L)</label>
+                    <input type="text" id="input-item-line" placeholder="es. 1/3 gn">
                 </div>
-                <div style="flex:1;">
-                    <label style="font-size:12px; font-weight:bold; color:var(--text-light);">Scorta (S)</label>
-                    <input type="text" id="input-item-stock" class="note-box" style="margin-top:5px; padding:10px;" placeholder="es. 2 kg">
+                <div class="input-group" style="flex:1;">
+                    <label>Scorta (S)</label>
+                    <input type="text" id="input-item-stock" placeholder="es. 2 kg">
                 </div>
             </div>
-
-            <label style="font-size:12px; font-weight:bold; color:var(--text-light);">Info / Ricetta (Visibile cliccando la ℹ️)</label>
-            <input type="text" id="input-item-info" class="note-box" style="margin: 5px 0 20px; padding:10px;" placeholder="es. Tagliare a julienne fine">
-            
-            <div style="display:flex; gap:10px;">
-                <button class="btn-action" style="flex:1; background:var(--bg); border:1px solid var(--border); color:var(--text);" onclick="closeModals()">Annulla</button>
-                <button class="btn-action" style="flex:1; background:var(--primary); color:white;" onclick="saveItem()">Salva Prodotto</button>
+            <div class="input-group">
+                <label>Assegna a un Ruolo (Filtro visibilità)</label>
+                <select id="input-item-role">
+                    <option value="tutti">Tutti i settori (Visibile a tutti)</option>
+                    <option value="cucina">Solo Cucina / Fritti</option>
+                    <option value="pizzeria">Solo Pizzeria</option>
+                    <option value="magazzino">Solo Magazzino</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>Ricetta o Direttiva (Opzionale)</label>
+                <input type="text" id="input-item-info" placeholder="es. Tagliare fini a 2mm">
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 25px;">
+                <button class="btn-action" style="background: var(--border); color: var(--text);" onclick="closeModals()">Annulla</button>
+                <button class="btn-action" style="background: var(--accent); color: var(--primary);" onclick="saveItem()">Salva</button>
             </div>
         </div>
     </div>
 
     <div class="modal-overlay" id="modal-info">
         <div class="modal-box" style="text-align: center;">
-            <div style="font-size:40px; margin-bottom:10px;">👨‍🍳</div>
-            <h3 id="info-title" style="margin-top:0; color:var(--text);">Nome</h3>
-            <p id="info-text" style="color:var(--text-light); font-size:15px; line-height:1.5; margin-bottom:25px;">Testo info</p>
-            <button class="btn-action" style="width:100%; background:var(--primary); color:white;" onclick="closeModals()">Ho capito</button>
-        </div>
-    </div>
-
-    <div class="modal-overlay" id="modal-sync">
-        <div class="modal-box">
-            <h3 style="margin-top:0; color:var(--success);">🚀 Invia ai Colleghi</h3>
-            <p style="font-size:13px; color:var(--text-light); line-height:1.4; margin-bottom:20px;">
-                Usa il bottone qui sotto per inviare su WhatsApp un "Link Magico". Chi lo clicca avrà l'app perfettamente aggiornata con le tue liste.
-            </p>
-            
-            <button class="btn-action" style="width:100%; background:#25D366; color:white; font-size:16px; margin-bottom:15px;" onclick="shareToWhatsApp()">
-                💬 CONDIVIDI SU WHATSAPP
-            </button>
-            
-            <div style="display:flex; gap:10px;">
-                <button class="btn-action" style="flex:1; background:var(--bg); border:1px solid var(--border); color:var(--text);" onclick="closeModals()">Chiudi</button>
-            </div>
-
-            <div id="manual-import-area" style="display:none; margin-top:20px; border-top:1px solid var(--border); padding-top:15px;">
-                <label style="font-size:11px; font-weight:bold; color:var(--text-light);">Backup: Incolla codice manuale</label>
-                <textarea id="import-data-box" class="note-box" style="margin-top:5px; height:60px; font-size:10px; font-family:monospace;"></textarea>
-                <button class="btn-action" style="width:100%; background:var(--warning); color:#000; margin-top:10px; padding:8px;" onclick="importManualData()">Importa Codice</button>
-            </div>
-            <div style="text-align:center; margin-top:15px;">
-                <span style="font-size:10px; color:var(--primary); cursor:pointer;" onclick="document.getElementById('manual-import-area').style.display='block';">Mostra opzioni sviluppatore</span>
-            </div>
+            <i class="fa-solid fa-book-open" style="font-size: 40px; color: var(--accent); margin-bottom: 15px;"></i>
+            <h3 id="info-title" style="margin-top:0; margin-bottom: 10px;">Titolo</h3>
+            <p id="info-text" style="color: var(--text-muted); line-height: 1.5; margin-bottom: 25px; font-size: 15px;">Testo ricetta</p>
+            <button class="btn-action" style="background: var(--primary); color: white;" onclick="closeModals()">Ho capito</button>
         </div>
     </div>
     <script>
-        // --- 1. VARIABILI DI STATO E MEMORIA ---
-        let appStructure = JSON.parse(localStorage.getItem('cucina_manager_struct'));
-        let appState = JSON.parse(localStorage.getItem('cucina_manager_state')) || {};
+        // --- CHIAVE CLOUD PRIVATA ---
+        const CLOUD_KEY = "$2a$10$cANUKKt8gusYBU0s1g35UeBKFJM21uWzSe/ugzWuHGeZhj6C7KEui";
+        
+        // --- MEMORIA E STATO GLOBALE ---
+        let appStructure = JSON.parse(localStorage.getItem('cucina_v3_struct'));
+        let appState = JSON.parse(localStorage.getItem('cucina_v3_state')) || {};
         let activeTabId = null;
+        let activeRole = 'tutti'; // Il filtro visualizzazione (cucina, pizzeria...)
         let editMode = false;
-        let focusMode = false;
         let currentEdit = { action: null, tabId: null, secId: null, itemId: null };
 
-        // --- 2. CONTROLLO "LINK MAGICO" (IMPORTAZIONE AUTOMATICA) ---
-        // Se c'è un codice "?data=" nel link, significa che il capocuoco ci ha inviato la lista
+        // --- SCUDO ANTI-CRASH (SANITIZZAZIONE TESTO) ---
+        function sanitize(str) {
+            if (!str) return "";
+            // Trasforma le parentesi angolari e le virgolette in innocui apici per non rompere l'HTML
+            return str.replace(/[<>"]/g, "'").trim(); 
+        }
+
+        // --- INIZIALIZZAZIONE E DOWNLOAD DAL CLOUD ---
         const urlParams = new URLSearchParams(window.location.search);
-        const importData = urlParams.get('data');
-        if (importData) {
-            try {
-                // Decodifica il link compresso e lo trasforma in dati
-                const decodedStr = decodeURIComponent(escape(atob(importData)));
-                const parsedData = JSON.parse(decodedStr);
-                if (typeof parsedData === 'object' && Object.keys(parsedData).length > 0) {
-                    appStructure = parsedData;
-                    localStorage.setItem('cucina_manager_struct', JSON.stringify(appStructure));
-                    alert("✅ Lista aggiornata con successo dal Link Magico!");
-                    // Pulisce il link in alto per evitare casini ricaricando la pagina
-                    window.history.replaceState({}, document.title, window.location.pathname);
-                }
-            } catch (e) {
-                console.error("Errore lettura link magico", e);
-                alert("⚠️ Il link che hai cliccato sembra corrotto o incompleto.");
-            }
-        }
-
-        // Se l'app è completamente vuota (prima apertura in assoluto), creo un esempio base
-        if (!appStructure || Object.keys(appStructure).length === 0) {
-            const baseTabId = 'tab_' + Date.now();
-            const baseSecId = 'sec_' + Date.now();
-            appStructure = {};
-            appStructure[baseTabId] = {
-                id: baseTabId, name: "ESEMPIO LUNEDÌ",
-                sections: [{
-                    id: baseSecId, name: "FRIGO PIZZE", color: "#0984e3",
-                    items: [
-                        { id: "item_1", n: "Fiori di zucca", l: "1/3", s: "1", info: "Controllare che non siano appassiti" },
-                        { id: "item_2", n: "Patate forno", l: "1/3", s: "2", info: "" }
-                    ]
-                }]
-            };
-            saveStructure();
-        }
-
-        activeTabId = Object.keys(appStructure)[0]; // Seleziona la prima scheda
-
-        // --- 3. UTILITY DI SISTEMA (TEMA, ORARIO, RESET INTELLIGENTE) ---
-        function saveStructure() { 
-            localStorage.setItem('cucina_manager_struct', JSON.stringify(appStructure)); 
-            document.getElementById('sync-status').style.color = 'var(--warning)'; // Indica che ci sono modifiche non condivise
-        }
+        const cloudBinId = urlParams.get('bin');
+        const syncIndicator = document.getElementById('sync-indicator');
         
-        function saveState() { 
-            localStorage.setItem('cucina_manager_state', JSON.stringify(appState)); 
-            updateTime();
-        }
-
-        function generateId() { return Math.random().toString(36).substr(2, 9); }
-
-        function updateTime() {
-            const now = new Date();
-            const timeStr = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
-            document.getElementById('last-update-text').innerText = "Ultima spunta: " + timeStr;
-        }
-
-        // Dark Mode
-        function toggleTheme() {
-            const currentTheme = document.documentElement.getAttribute('data-theme');
-            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-            document.documentElement.setAttribute('data-theme', newTheme);
-            localStorage.setItem('cucina_theme', newTheme);
-        }
-        // Ripristina il tema salvato
-        if (localStorage.getItem('cucina_theme') === 'dark') {
-            document.documentElement.setAttribute('data-theme', 'dark');
-        }
-
-        // Focus Mode (Nascondi i prodotti già spuntati)
-        function toggleFocusMode() {
-            focusMode = !focusMode;
-            document.getElementById('btn-focus').classList.toggle('active', focusMode);
-            renderContent(); // Ricarica la vista
-        }
-
-        // Reset Intelligente Cambio Giorno
-        function checkNewDay() {
-            const today = new Date().toLocaleDateString();
-            const lastReset = localStorage.getItem('cucina_last_day');
-            if (lastReset && lastReset !== today) {
-                if (confirm("🌅 È un nuovo giorno! Vuoi azzerare tutte le spunte e le note di ieri per cominciare il turno in pulito?")) {
-                    appState = {};
-                    saveState();
+        if (cloudBinId) {
+            syncIndicator.style.display = 'block';
+            syncIndicator.innerText = '⏳ SCARICAMENTO...';
+            syncIndicator.style.color = 'var(--warning)';
+            
+            fetch(`https://api.jsonbin.io/v3/b/${cloudBinId}/latest`, {
+                headers: { 'X-Master-Key': CLOUD_KEY }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data && data.record) {
+                    appStructure = data.record;
+                    localStorage.setItem('cucina_v3_struct', JSON.stringify(appStructure));
+                    alert("☁️ Lista Sede aggiornata con successo dal Cloud!");
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                    syncIndicator.innerText = '☁️ CLOUD OK';
+                    syncIndicator.style.color = 'var(--success)';
+                    initApp();
                 }
-            }
-            localStorage.setItem('cucina_last_day', today);
+            })
+            .catch(err => {
+                alert("⚠️ Errore di connessione al Cloud. Verranno usati i dati salvati offline sul telefono.");
+                syncIndicator.innerText = '❌ OFFLINE';
+                syncIndicator.style.color = 'var(--danger)';
+                initApp();
+            });
+        } else {
+            initApp();
         }
 
-        function smartReset() {
-            if (confirm("🧹 Sei sicuro di voler azzerare TUTTE le spunte e le note di oggi?")) {
-                appState = {};
-                saveState();
-                renderContent();
+        function initApp() {
+            // Se l'app è completamente vuota, crea una struttura di esempio
+            if (!appStructure || Object.keys(appStructure).length === 0) {
+                const bTab = 'tab_' + Date.now();
+                const bSec = 'sec_' + Date.now();
+                appStructure = {};
+                appStructure[bTab] = {
+                    id: bTab, name: "ROMA (Sede Principale)",
+                    sections: [{
+                        id: bSec, name: "FRIGO PIZZE", color: "#0984e3",
+                        items: [
+                            { id: "item_1", n: "Fiori di zucca", l: "1/3 gn", s: "2 kg", role: "pizzeria", info: "Puliti e senza pistillo" },
+                            { id: "item_2", n: "Patate al forno", l: "1/1 gn", s: "5 kg", role: "cucina", info: "Taglio a spicchi grossi" }
+                        ]
+                    }]
+                };
+                saveStructure();
             }
-        }
-        // --- 4. GESTIONE MODALITA' MODIFICA E RENDER GENERALE ---
-        function toggleEditMode() {
-            editMode = !editMode;
-            document.body.classList.toggle('edit-mode', editMode);
-            document.getElementById('btn-edit').classList.toggle('active', editMode);
+            activeTabId = Object.keys(appStructure)[0];
+            
+            // Ripristina il tema Scuro/Chiaro
+            if (localStorage.getItem('cucina_v3_theme') === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'dark');
+            }
+            
+            checkNewDay();
+            updateTime();
             renderApp();
         }
 
-        function renderApp() {
-            renderTabs();
-            renderContent();
-            updateProgressBar();
+        // --- SISTEMA DI SALVATAGGIO LOCALE ---
+        function saveStructure() { 
+            localStorage.setItem('cucina_v3_struct', JSON.stringify(appStructure)); 
+            syncIndicator.style.display = 'block';
+            syncIndicator.innerText = '● MODIFICATO (DA INVIARE)';
+            syncIndicator.style.color = 'var(--warning)';
+        }
+        function saveState() { 
+            localStorage.setItem('cucina_v3_state', JSON.stringify(appState)); 
+            updateTime();
         }
 
-        // --- 5. DISEGNO DELLE SCHEDE (TABS IN ALTO) ---
-        function renderTabs() {
-            const container = document.getElementById('tabs-container');
-            container.innerHTML = '';
-            
-            Object.values(appStructure).forEach(tab => {
-                const div = document.createElement('div');
-                div.className = `tab ${tab.id === activeTabId ? 'active' : ''}`;
-                div.onclick = () => { activeTabId = tab.id; renderApp(); };
-                
-                let html = `<span>${tab.name}</span>`;
-                if (editMode) {
-                    html += `<div style="display:flex; gap:5px; margin-left:10px;">
-                                <button class="btn-action" style="padding:4px; font-size:10px; background:var(--warning); color:#000;" onclick="event.stopPropagation(); openTabModal('${tab.id}')">✏️</button>
-                                <button class="btn-action" style="padding:4px; font-size:10px; background:var(--danger); color:white;" onclick="event.stopPropagation(); deleteTab('${tab.id}')">❌</button>
-                             </div>`;
-                }
-                div.innerHTML = html;
-                container.appendChild(div);
-            });
-
-            // Tasto aggiungi scheda (visibile solo se modifichi)
-            if (editMode) {
-                const addBtn = document.createElement('div');
-                addBtn.className = 'tab';
-                addBtn.style.background = 'var(--success)';
-                addBtn.style.color = 'white';
-                addBtn.innerHTML = '+ NUOVA SCHEDA';
-                addBtn.onclick = () => openTabModal();
-                container.appendChild(addBtn);
+        // --- FUNZIONI DI UTILITÀ ---
+        function generateId() { return Math.random().toString(36).substr(2, 9); }
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('last-update-text').innerText = "Ultima spunta: " + now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+        }
+        function toggleTheme() {
+            const newTheme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('cucina_v3_theme', newTheme);
+        }
+        function checkNewDay() {
+            const today = new Date().toLocaleDateString();
+            if (localStorage.getItem('cucina_v3_day') !== today) {
+                appState = {}; saveState(); localStorage.setItem('cucina_v3_day', today);
+            }
+        }
+        function smartReset() {
+            if (confirm("🧹 Sei sicuro di voler cancellare TUTTE le spunte e le note per iniziare un nuovo turno pulito?")) {
+                appState = {}; saveState(); renderApp();
             }
         }
 
-        // --- 6. DISEGNO DELLE TABELLE E DEI PRODOTTI ---
+        // --- GESTIONE VISTE E RUOLI ---
+        function setRoleFilter(role, element) {
+            activeRole = role;
+            document.querySelectorAll('.sidebar .nav-item').forEach(el => el.classList.remove('active'));
+            if(element) element.classList.add('active');
+            
+            if(window.innerWidth <= 768) document.getElementById('sidebar').classList.remove('open');
+            renderApp();
+        }
+
+        function toggleEditMode() {
+            editMode = !editMode;
+            document.body.classList.toggle('edit-mode', editMode);
+            const btn = document.getElementById('sidebar-edit-status');
+            if (editMode) {
+                btn.innerHTML = `<i class="fa-solid fa-unlock"></i> MODIFICA ATTIVA`;
+                btn.style.color = "var(--danger)";
+                btn.style.background = "rgba(239, 68, 68, 0.1)";
+            } else {
+                btn.innerHTML = `<i class="fa-solid fa-lock"></i> MODALITÀ CONSULTAZIONE`;
+                btn.style.color = "var(--warning)";
+                btn.style.background = "rgba(245, 158, 11, 0.1)";
+            }
+            renderApp();
+        }
+
+        // --- RENDER SIDEBAR (SEDI E SCHEDE) ---
+        function renderSidebar() {
+            const menu = document.getElementById('tabs-menu');
+            menu.innerHTML = '';
+            
+            Object.values(appStructure).forEach(tab => {
+                const div = document.createElement('div');
+                div.className = `nav-item ${tab.id === activeTabId ? 'active' : ''}`;
+                div.style.paddingLeft = "40px"; 
+                
+                let html = `<i class="fa-solid fa-folder-open" style="font-size:14px;"></i> <span>${tab.name}</span>`;
+                
+                if (editMode) {
+                    html += `<div style="margin-left:auto; display:flex; gap:10px;">
+                                <i class="fa-solid fa-pen" style="color:var(--warning);" onclick="event.stopPropagation(); openTabModal('${tab.id}')"></i>
+                                <i class="fa-solid fa-trash" style="color:var(--danger);" onclick="event.stopPropagation(); deleteTab('${tab.id}')"></i>
+                             </div>`;
+                }
+                
+                div.innerHTML = html;
+                div.onclick = () => { activeTabId = tab.id; renderApp(); if(window.innerWidth <= 768) document.getElementById('sidebar').classList.remove('open'); };
+                menu.appendChild(div);
+            });
+
+            if (editMode) {
+                const addBtn = document.createElement('div');
+                addBtn.className = 'nav-item';
+                addBtn.style.color = 'var(--success)';
+                addBtn.style.paddingLeft = "40px";
+                addBtn.innerHTML = `<i class="fa-solid fa-plus"></i> CREA NUOVA SEDE`;
+                addBtn.onclick = () => openTabModal();
+                menu.appendChild(addBtn);
+            }
+        }
+
+        // --- RENDER CONTENUTO PRINCIPALE (LE TABELLE) ---
+        function renderApp() {
+            if (!appStructure[activeTabId]) activeTabId = Object.keys(appStructure)[0];
+            document.getElementById('header-title').innerText = appStructure[activeTabId] ? appStructure[activeTabId].name : 'Nessuna Sede';
+            
+            renderSidebar();
+            renderContent();
+        }
+
         function renderContent() {
             const container = document.getElementById('main-content');
             container.innerHTML = '';
-
             if (!activeTabId || !appStructure[activeTabId]) return;
 
             const tab = appStructure[activeTabId];
 
             tab.sections.forEach(sec => {
-                const card = document.createElement('div');
-                card.className = 'section-card';
-                
-                // Intestazione colorata della sezione
-                let secHtml = `<div class="section-header" style="background: ${sec.color};">
-                    <span>${sec.name}</span>`;
-                if (editMode) {
-                    secHtml += `<div style="display:flex; gap:5px;">
-                        <button class="btn-action" style="padding:4px 8px; font-size:12px; background:rgba(255,255,255,0.2); color:white;" onclick="openSectionModal('${sec.id}')">✏️ Modifica</button>
-                        <button class="btn-action" style="padding:4px 8px; font-size:12px; background:var(--danger); color:white;" onclick="deleteSection('${sec.id}')">❌</button>
-                    </div>`;
+                // FILTRO RUOLO: Mostra solo i prodotti pertinenti al ruolo selezionato a sinistra
+                let itemsToShow = sec.items;
+                if (activeRole !== 'tutti' && !editMode) {
+                    itemsToShow = sec.items.filter(i => i.role === activeRole || i.role === 'tutti');
                 }
-                secHtml += `</div>`;
 
-                // Creazione della Tabella
-                secHtml += `<table>`;
+                // NASCONDI FRIGO VUOTO: Se il pizzaiolo non ha niente in questo frigo, il frigo non appare!
+                if (itemsToShow.length === 0 && !editMode) return;
+
+                const card = document.createElement('div');
+                card.className = 'card';
                 
-                sec.items.forEach(item => {
+                let secHtml = `
+                    <div class="card-header" style="background: ${sec.color};">
+                        <span>${sec.name}</span>
+                        ${editMode ? `<div style="display:flex; gap:12px;">
+                            <i class="fa-solid fa-pen" style="cursor:pointer;" onclick="openSectionModal('${sec.id}')"></i>
+                            <i class="fa-solid fa-trash" style="cursor:pointer; color:var(--danger);" onclick="deleteSection('${sec.id}')"></i>
+                        </div>` : ''}
+                        <div class="card-progress-bg"><div class="card-progress-fill" id="prog-${sec.id}"></div></div>
+                    </div>
+                    <div style="overflow-x: auto;">
+                        <table>`;
+                
+                let doneCount = 0;
+
+                itemsToShow.forEach(item => {
                     const stateKey = `${tab.id}_${sec.id}_${item.id}`;
                     const iState = appState[stateKey] || { c: false, n: "" };
+                    if (iState.c) doneCount++;
                     
-                    // Logica Focus Mode (Nascondi i prodotti già spuntati)
-                    const isHidden = (focusMode && iState.c) && !editMode ? 'hidden' : '';
-                    const isDone = iState.c ? 'is-done' : '';
+                    // Creazione del badge visivo del ruolo (se non è "Tutti")
+                    let roleBadge = '';
+                    if (item.role === 'cucina') roleBadge = '<span class="role-badge">CUCINA</span>';
+                    else if (item.role === 'pizzeria') roleBadge = '<span class="role-badge">PIZZA</span>';
+                    else if (item.role === 'magazzino') roleBadge = '<span class="role-badge">MAG</span>';
 
                     secHtml += `
-                    <tr id="tr-${stateKey}" class="${isDone} ${isHidden}">
-                        <td class="col-info">
-                            <span class="prod-name">${item.n}</span>
-                            ${item.info ? `<span class="info-btn" onclick="showInfo('${item.n.replace(/'/g, "\\'")}', '${item.info.replace(/'/g, "\\'")}')">ℹ️ Info</span>` : ''}
+                    <tr class="${iState.c ? 'is-done' : ''}" id="tr-${stateKey}">
+                        <td style="width: 45%;">
+                            <span class="prod-name">${item.n} ${roleBadge}</span>
+                            <span class="prod-meta">L: ${item.l} • S: ${item.s} 
+                                ${item.info ? `<i class="fa-solid fa-circle-info info-btn" onclick="showInfo('${item.n.replace(/'/g, "\\'")}', '${item.info.replace(/'/g, "\\'")}')"></i>` : ''}
+                            </span>
+                            
                             ${editMode ? `<div class="edit-tools">
-                                <button class="btn-action" style="padding:4px 10px; background:var(--warning); color:#000;" onclick="openItemModal('${sec.id}', '${item.id}')">✏️</button>
-                                <button class="btn-delete" onclick="deleteItem('${sec.id}', '${item.id}')">Elimina</button>
+                                <button class="btn-action" style="background:var(--warning); color:#000;" onclick="openItemModal('${sec.id}', '${item.id}')"><i class="fa-solid fa-pen"></i> Modifica</button>
+                                <button class="btn-action" style="background:var(--danger); color:white; flex: 0 0 40px;" onclick="deleteItem('${sec.id}', '${item.id}')"><i class="fa-solid fa-trash"></i></button>
                             </div>` : ''}
                         </td>
-                        <td class="col-ls">L: ${item.l}<br>S: ${item.s}</td>
-                        <td class="col-note">
-                            <input type="text" class="note-box" value="${iState.n}" placeholder="Note..." oninput="updateState('${stateKey}', 'n', this.value)" ${editMode ? 'disabled' : ''}>
+                        <td style="width: 35%;">
+                            <input type="text" class="note-input" value="${iState.n}" placeholder="Scrivi nota..." onchange="updateState('${stateKey}', 'n', this.value)" ${editMode ? 'disabled' : ''}>
                         </td>
-                        <td class="col-check">
-                            <label class="chk-container">
-                                <input type="checkbox" ${iState.c ? 'checked' : ''} onchange="updateState('${stateKey}', 'c', this.checked)" ${editMode ? 'disabled' : ''}>
-                                <span class="checkmark"></span>
-                            </label>
+                        <td style="width: 20%;">
+                            <div class="chk-wrap">
+                                <div class="chk-btn ${iState.c ? 'checked' : ''}" onclick="if(!${editMode}) toggleCheck('${stateKey}')">
+                                    <i class="fa-solid fa-check"></i>
+                                </div>
+                            </div>
                         </td>
                     </tr>`;
                 });
-                secHtml += `</table>`;
+                
+                secHtml += `</table></div>`;
 
                 if (editMode) {
-                    secHtml += `<button class="btn-add" style="margin: 15px; width: calc(100% - 30px);" onclick="openItemModal('${sec.id}')">+ AGGIUNGI PRODOTTO QUI</button>`;
+                    secHtml += `<div style="padding:15px;"><button class="btn-action" style="background:rgba(56, 189, 248, 0.1); color:var(--accent); border: 1px dashed var(--accent);" onclick="openItemModal('${sec.id}')"><i class="fa-solid fa-plus"></i> AGGIUNGI PRODOTTO QUI</button></div>`;
                 }
 
                 card.innerHTML = secHtml;
                 container.appendChild(card);
+
+                // Calcolo e animazione della barra di avanzamento del singolo frigo
+                setTimeout(() => {
+                    const progBar = document.getElementById(`prog-${sec.id}`);
+                    if (progBar && itemsToShow.length > 0) {
+                        const perc = Math.round((doneCount / itemsToShow.length) * 100);
+                        progBar.style.width = perc + '%';
+                        if (perc === 100) progBar.style.background = 'var(--warning)'; // Diventa arancione/oro se finito
+                        else progBar.style.background = 'var(--success)';
+                    }
+                }, 50);
             });
 
             if (editMode) {
                 const addSecBtn = document.createElement('button');
-                addSecBtn.className = 'btn-add';
+                addSecBtn.className = 'btn-action';
                 addSecBtn.style.background = 'var(--success)';
-                addSecBtn.style.padding = '15px';
-                addSecBtn.innerText = '+ CREA NUOVA SEZIONE FRIGO';
+                addSecBtn.style.color = 'white';
+                addSecBtn.style.padding = '20px';
+                addSecBtn.innerHTML = '<i class="fa-solid fa-plus"></i> CREA NUOVO SETTORE / FRIGO';
                 addSecBtn.onclick = () => openSectionModal();
                 container.appendChild(addSecBtn);
             }
         }
 
-        // --- 7. AGGIORNAMENTO STATO E PROGRESS BAR ---
+        // --- GESTIONE STATO (SPUNTE E NOTE) E VIBRAZIONE ---
+        function toggleCheck(key) {
+            if (!appState[key]) appState[key] = { c: false, n: "" };
+            appState[key].c = !appState[key].c;
+            
+            // FEEDBACK TATTILE: Fa vibrare brevemente i telefoni Android al click
+            if (navigator.vibrate && appState[key].c) {
+                navigator.vibrate(40); 
+            }
+            
+            saveState();
+            renderContent(); 
+        }
+
         function updateState(key, field, value) {
             if (!appState[key]) appState[key] = { c: false, n: "" };
-            appState[key][field] = value;
+            appState[key][field] = sanitize(value); // Sanitizza per evitare crash!
             saveState();
-            
-            if (field === 'c') {
-                const row = document.getElementById(`tr-${key}`);
-                if (value) row.classList.add('is-done');
-                else row.classList.remove('is-done');
-                
-                if (focusMode && value && !editMode) {
-                    setTimeout(() => row.classList.add('hidden'), 300); // Sparisce con animazione
-                }
-                updateProgressBar();
-            }
         }
-
-        function updateProgressBar() {
-            if (!activeTabId || !appStructure[activeTabId]) return;
-            const tab = appStructure[activeTabId];
-            let totalItems = 0;
-            let doneItems = 0;
-
-            tab.sections.forEach(sec => {
-                sec.items.forEach(item => {
-                    totalItems++;
-                    const stateKey = `${tab.id}_${sec.id}_${item.id}`;
-                    if (appState[stateKey] && appState[stateKey].c) doneItems++;
-                });
-            });
-
-            const percentage = totalItems === 0 ? 0 : Math.round((doneItems / totalItems) * 100);
-            const bar = document.getElementById('main-progress');
-            bar.style.width = percentage + '%';
-            
-            // Effetto Wow quando si finisce
-            if (percentage === 100 && totalItems > 0) {
-                bar.style.background = '#ffd700'; // Oro
-                bar.style.boxShadow = '0 0 15px #ffd700';
-            } else {
-                bar.style.background = 'var(--success)';
-                bar.style.boxShadow = 'none';
-            }
-        }
-        // --- 8. GESTIONE FINESTRE MODALI E INSERIMENTO DATI (CRUD) ---
+        // --- GESTIONE FINESTRE MODALI E INSERIMENTO DATI (CRUD) ---
         function closeModals() { 
             document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none'); 
         }
 
-        // Info Prodotto (Ricettario)
         function showInfo(title, text) {
             document.getElementById('info-title').innerText = title;
             document.getElementById('info-text').innerText = text;
             document.getElementById('modal-info').style.display = 'flex';
         }
 
-        // --- GESTIONE SCHEDE (LUN/GIO, VENERDI...) ---
+        // -- CRUD Sedi/Schede --
         function openTabModal(tabId = null) {
             currentEdit = { action: tabId ? 'edit' : 'new', tabId: tabId };
             document.getElementById('input-tab-name').value = tabId ? appStructure[tabId].name : '';
             document.getElementById('modal-tab').style.display = 'flex';
         }
         function saveTab() {
-            const name = document.getElementById('input-tab-name').value.trim();
-            if (!name) return alert("Inserisci un nome!");
+            const name = sanitize(document.getElementById('input-tab-name').value);
+            if (!name) return alert("Inserisci il nome della Sede!");
             
             if (currentEdit.action === 'new') {
                 const newId = 'tab_' + generateId();
@@ -612,14 +658,14 @@
             saveStructure(); closeModals(); renderApp();
         }
         function deleteTab(tabId) {
-            if (confirm("⚠️ ATTENZIONE: Vuoi eliminare l'intera scheda e TUTTI i frigoriferi al suo interno?")) {
+            if (confirm("⚠️ ATTENZIONE: Vuoi eliminare l'intera Sede e tutti i frigoriferi al suo interno?")) {
                 delete appStructure[tabId];
                 activeTabId = Object.keys(appStructure)[0] || null;
                 saveStructure(); renderApp();
             }
         }
 
-        // --- GESTIONE SEZIONI (FRIGO PIZZE, FRITTI...) ---
+        // -- CRUD Frigoriferi/Sezioni --
         function openSectionModal(secId = null) {
             currentEdit = { action: secId ? 'edit' : 'new', secId: secId };
             if (secId) {
@@ -628,14 +674,14 @@
                 document.getElementById('input-section-color').value = sec.color;
             } else {
                 document.getElementById('input-section-name').value = '';
-                document.getElementById('input-section-color').value = '#2d3436';
+                document.getElementById('input-section-color').value = '#0f172a';
             }
             document.getElementById('modal-section').style.display = 'flex';
         }
         function saveSection() {
-            const name = document.getElementById('input-section-name').value.trim();
+            const name = sanitize(document.getElementById('input-section-name').value);
             const color = document.getElementById('input-section-color').value;
-            if (!name) return alert("Inserisci un nome per il frigo!");
+            if (!name) return alert("Inserisci un nome per il settore!");
 
             if (currentEdit.action === 'new') {
                 appStructure[activeTabId].sections.push({ id: 'sec_' + generateId(), name: name, color: color, items: [] });
@@ -646,13 +692,13 @@
             saveStructure(); closeModals(); renderApp();
         }
         function deleteSection(secId) {
-            if (confirm("⚠️ Eliminare questo frigo e tutti i suoi prodotti?")) {
+            if (confirm("⚠️ Eliminare questo settore e tutti i suoi prodotti?")) {
                 appStructure[activeTabId].sections = appStructure[activeTabId].sections.filter(s => s.id !== secId);
                 saveStructure(); renderApp();
             }
         }
 
-        // --- GESTIONE PRODOTTI ---
+        // -- CRUD Prodotti --
         function openItemModal(secId, itemId = null) {
             currentEdit = { action: itemId ? 'edit' : 'new', secId: secId, itemId: itemId };
             if (itemId) {
@@ -661,29 +707,33 @@
                 document.getElementById('input-item-name').value = item.n;
                 document.getElementById('input-item-line').value = item.l;
                 document.getElementById('input-item-stock').value = item.s;
+                document.getElementById('input-item-role').value = item.role || 'tutti';
                 document.getElementById('input-item-info').value = item.info || '';
             } else {
                 document.getElementById('input-item-name').value = '';
                 document.getElementById('input-item-line').value = '';
                 document.getElementById('input-item-stock').value = '';
+                document.getElementById('input-item-role').value = 'tutti';
                 document.getElementById('input-item-info').value = '';
             }
             document.getElementById('modal-item').style.display = 'flex';
         }
         function saveItem() {
-            const n = document.getElementById('input-item-name').value.trim();
-            const l = document.getElementById('input-item-line').value.trim() || "-";
-            const s = document.getElementById('input-item-stock').value.trim() || "-";
-            const info = document.getElementById('input-item-info').value.trim();
+            const n = sanitize(document.getElementById('input-item-name').value);
+            const l = sanitize(document.getElementById('input-item-line').value) || "-";
+            const s = sanitize(document.getElementById('input-item-stock').value) || "-";
+            const role = document.getElementById('input-item-role').value;
+            const info = sanitize(document.getElementById('input-item-info').value);
+            
             if (!n) return alert("Il nome del prodotto è obbligatorio!");
 
             const sec = appStructure[activeTabId].sections.find(sec => sec.id === currentEdit.secId);
 
             if (currentEdit.action === 'new') {
-                sec.items.push({ id: 'item_' + generateId(), n, l, s, info });
+                sec.items.push({ id: 'item_' + generateId(), n, l, s, role, info });
             } else {
                 const item = sec.items.find(i => i.id === currentEdit.itemId);
-                item.n = n; item.l = l; item.s = s; item.info = info;
+                item.n = n; item.l = l; item.s = s; item.role = role; item.info = info;
             }
             saveStructure(); closeModals(); renderApp();
         }
@@ -695,64 +745,108 @@
             }
         }
 
-        // --- 9. SINCRONIZZAZIONE (MAGIC LINK WHATSAPP) E BACKUP ---
-        function openSyncModal() {
-            // Prepara il codice di backup manuale nel caso il link fosse troppo lungo
-            const rawData = JSON.stringify(appStructure);
-            document.getElementById('import-data-box').value = rawData;
-            document.getElementById('modal-sync').style.display = 'flex';
+        // --- SISTEMA REPORT (NOTE / MANCANTI) ---
+        let currentReportData = []; 
+
+        function generateReport() {
+            currentReportData = [];
+            const tab = appStructure[activeTabId];
+            if (!tab) return;
+            
+            let htmlPreview = `SEDE: ${tab.name}\nData: ${new Date().toLocaleDateString()}\n------------------------\n`;
+            
+            tab.sections.forEach(sec => {
+                let sectionHasNotes = false;
+                let sectionNotes = `\n[${sec.name.toUpperCase()}]\n`;
+                
+                sec.items.forEach(item => {
+                    const stateKey = `${tab.id}_${sec.id}_${item.id}`;
+                    const iState = appState[stateKey];
+                    // Se la nota esiste e non è vuota
+                    if (iState && iState.n && iState.n.trim() !== "") {
+                        sectionHasNotes = true;
+                        sectionNotes += `- ${item.n}: ${iState.n}\n`;
+                        currentReportData.push({ sec: sec.name, prod: item.n, nota: iState.n });
+                    }
+                });
+                
+                if (sectionHasNotes) htmlPreview += sectionNotes;
+            });
+            
+            if (currentReportData.length === 0) {
+                htmlPreview += "\n✅ Nessuna nota o prodotto mancante registrato oggi.";
+            }
+            
+            document.getElementById('report-preview').innerText = htmlPreview;
+            document.getElementById('modal-report').style.display = 'flex';
+            if(window.innerWidth <= 768) document.getElementById('sidebar').classList.remove('open');
         }
 
-        function shareToWhatsApp() {
+        function copyReportText() {
+            if (currentReportData.length === 0) return alert("Nessuna nota da condividere.");
+            const text = document.getElementById('report-preview').innerText;
+            const waUrl = "https://wa.me/?text=" + encodeURIComponent("📋 *REPORT NOTE CUCINA*\n\n" + text);
+            window.open(waUrl, '_blank');
+        }
+
+        function downloadReportExcel() {
+            if (currentReportData.length === 0) return alert("Nessuna nota da scaricare.");
+            
+            // Crea il formato CSV (leggibile da Excel)
+            let csvContent = "data:text/csv;charset=utf-8,\uFEFF"; // BOM per i caratteri accentati in Excel
+            csvContent += "SETTORE;PRODOTTO;NOTA/MANCANZA\n";
+            
+            currentReportData.forEach(row => {
+                const sec = row.sec.replace(/"/g, '""');
+                const prod = row.prod.replace(/"/g, '""');
+                const nota = row.nota.replace(/"/g, '""');
+                csvContent += `"${sec}";"${prod}";"${nota}"\n`;
+            });
+            
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `Report_Cucina_${new Date().toLocaleDateString().replace(/\//g, '-')}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // --- SINCRONIZZAZIONE CLOUD (WHATSAPP MAGIC LINK) ---
+        async function openSyncModal() {
+            if(!confirm("Vuoi salvare l'architettura aggiornata sul Cloud e inviarla ai colleghi su WhatsApp?")) return;
+            
+            const syncIndicator = document.getElementById('sync-indicator');
+            syncIndicator.style.display = 'block';
+            syncIndicator.innerText = "⏳ CARICAMENTO...";
+            
             try {
-                // Comprime e protegge i dati per viaggiare nel link
-                const rawData = JSON.stringify(appStructure);
-                const encodedData = btoa(unescape(encodeURIComponent(rawData))); 
+                const response = await fetch('https://api.jsonbin.io/v3/b', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Master-Key': CLOUD_KEY,
+                        'X-Bin-Name': 'Menu_Enterprise_v3'
+                    },
+                    body: JSON.stringify(appStructure)
+                });
+                const result = await response.json();
+                const newBinId = result.metadata.id;
                 
-                // Crea il Link Magico basato sull'indirizzo attuale dell'app
                 const baseUrl = window.location.href.split('?')[0];
-                const magicLink = baseUrl + '?data=' + encodedData;
+                const magicLink = baseUrl + '?bin=' + newBinId;
 
-                // Prepara il messaggio di testo per WhatsApp
-                const textMsg = "👨‍🍳 *AGGIORNAMENTO LISTA CUCINA*\n\nEcco la nuova lista aggiornata. Clicca sul link qui sotto per importarla automaticamente nell'app:\n\n" + magicLink;
+                const textMsg = "👨‍🍳 *AGGIORNAMENTO CUCINA MANAGER*\n\nHo modificato la struttura delle sedi. Clicca sul link qui sotto per sincronizzare l'app istantaneamente:\n\n" + magicLink;
+                window.open("https://wa.me/?text=" + encodeURIComponent(textMsg), '_blank');
                 
-                // Apre WhatsApp
-                const waUrl = "https://wa.me/?text=" + encodeURIComponent(textMsg);
-                window.open(waUrl, '_blank');
-                
-                document.getElementById('sync-status').style.color = 'var(--success)';
-                closeModals();
+                syncIndicator.innerText = '☁️ CLOUD OK';
+                syncIndicator.style.color = 'var(--success)';
             } catch (error) {
-                alert("La lista è troppo grande per un Link Magico. Usa il codice manuale nelle opzioni sviluppatore.");
+                alert("⚠️ Errore di connessione. Riprova quando hai internet stabile.");
+                syncIndicator.innerText = '❌ ERRORE CLOUD';
+                syncIndicator.style.color = 'var(--danger)';
             }
         }
-
-        function importManualData() {
-            try {
-                const data = document.getElementById('import-data-box').value;
-                const parsed = JSON.parse(data);
-                if (typeof parsed === 'object' && Object.keys(parsed).length > 0) {
-                    appStructure = parsed;
-                    activeTabId = Object.keys(appStructure)[0];
-                    saveStructure();
-                    closeModals();
-                    renderApp();
-                    alert("✅ Dati importati con successo dal codice manuale!");
-                } else { throw new Error("Non valido"); }
-            } catch (e) {
-                alert("⚠️ Errore! Assicurati di aver incollato il codice corretto per intero.");
-            }
-        }
-
-        // --- AVVIO DELL'APPLICAZIONE ---
-        checkNewDay(); // Controlla se è un nuovo giorno per azzerare
-        updateTime();  // Imposta l'orologio dell'ultimo aggiornamento
-        renderApp();   // Disegna l'interfaccia
-
-        // Salva lo stato ogni volta che l'utente esce o chiude la pagina
-        window.addEventListener('beforeunload', () => {
-            saveState();
-        });
     </script>
 </body>
 </html>
