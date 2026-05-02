@@ -10,7 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;600;800&family=Poppins:wght@600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
-           <style>
+            <style>
         :root {
             --primary: #0f172a; --accent: #38bdf8; --success: #10b981;
             --danger: #ef4444; --warning: #f59e0b; --bg: #f8fafc;
@@ -24,10 +24,9 @@
             --text-muted: #94a3b8; --border: #334155; --primary: #f8fafc;
         }
 
-        /* RESET GLOBALE */
+        /* RESET GLOBALE E FIX ALTEZZA */
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; margin: 0; padding: 0; }
         
-        /* FIX ALTEZZA: 100dvh (Dynamic) adatta per iPhone/Android */
         body { 
             font-family: 'Urbanist', sans-serif; background: var(--bg); color: var(--text); 
             display: flex; height: 100dvh; width: 100vw; overflow: hidden; overscroll-behavior: none; 
@@ -67,30 +66,22 @@
         .search-bar { width: 100%; padding: 10px 15px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-family: inherit; font-size: 13px; }
         .search-bar:focus { border-color: var(--accent); }
 
-        /* FIX SCORRIMENTO VERTICALE (min-height: 0 e padding extra) */
+        /* SCORRIMENTO PRINCIPALE CON SUPER-BUFFER (Anti blocco tasti) */
         .content-scroll { 
-            flex: 1; /* Prende tutto lo spazio rimanente */
-            min-height: 0; /* TRUCCO FONDAMENTALE PER FAR FUNZIONARE LO SCROLL NEI FLEXBOX */
-            overflow-y: auto; 
-            -webkit-overflow-scrolling: touch; /* Scorrimento fluido su iOS */
+            flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; 
             padding: 15px; 
-            padding-bottom: calc(100px + var(--safe-bottom)); /* Spazio extra in fondo per non far tagliare l'ultima tabella */
-            display: flex; 
-            flex-direction: column; 
-            gap: 20px; 
+            padding-bottom: calc(200px + var(--safe-bottom)); /* 200px garantiscono che il tasto + sia sempre raggiungibile */
+            display: flex; flex-direction: column; gap: 20px; 
         }
 
-        /* Griglia intelligente solo per schermi larghi */
         @media (min-width: 900px) { 
-            .content-scroll { display: grid; grid-template-columns: repeat(2, 1fr); align-content: start; padding: 25px; padding-bottom: 100px; } 
+            .content-scroll { display: grid; grid-template-columns: repeat(2, 1fr); align-content: start; padding: 25px; padding-bottom: 150px; } 
             .toolbar { flex-direction: row; align-items: center; justify-content: space-between; } 
             .search-bar { width: 300px; } 
         }
-        @media (min-width: 1400px) {
-            .content-scroll { grid-template-columns: repeat(3, 1fr); }
-        }
+        @media (min-width: 1400px) { .content-scroll { grid-template-columns: repeat(3, 1fr); } }
         
-        /* GRIGLIA FRIGORIFERI */
+        /* GRIGLIA FRIGORIFERI E TABELLE */
         .card { background: var(--card); border-radius: 16px; border: 1px solid var(--border); box-shadow: 0 4px 15px rgba(0,0,0,0.03); overflow: hidden; display: flex; flex-direction: column; position: relative; animation: fadeIn 0.3s ease; height: max-content; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .card-header { padding: 15px; color: white; display: flex; justify-content: space-between; align-items: center; font-weight: 800; font-size: 0.9rem; position: relative; }
@@ -118,8 +109,24 @@
         body.edit-mode .edit-tools { display: flex; }
         .btn-action { border: none; padding: 12px 15px; border-radius: 10px; font-weight: 800; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; font-size: 13px; width: 100%; transition: 0.2s;}
         
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(3px); display: none; justify-content: center; align-items: center; z-index: 2000; padding: 20px; }
-        .modal-box { background: var(--card); width: 100%; max-width: 500px; border-radius: 20px; padding: 25px; max-height: 90vh; overflow-y: auto; }
+        /* ================= IL FIX PER LE FINESTRE MODALI E LA TASTIERA ================= */
+        .modal-overlay { 
+            position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(3px); 
+            display: none; justify-content: center; 
+            align-items: flex-end; /* FONDAMENTALE: Si allinea in basso, così la tastiera non la fa "esplodere" */
+            z-index: 2000; padding: 15px; padding-bottom: calc(15px + var(--safe-bottom)); 
+        }
+        
+        @media (min-width: 768px) {
+            .modal-overlay { align-items: center; } /* Su tablet/PC torna al centro perché lo schermo è grande */
+        }
+
+        .modal-box { 
+            background: var(--card); width: 100%; max-width: 500px; border-radius: 20px; padding: 25px; 
+            max-height: 80dvh; /* Ridotto per dare spazio alla tastiera */
+            overflow-y: auto; -webkit-overflow-scrolling: touch; 
+        }
+        
         .input-group { margin-bottom: 15px; }
         .input-group label { display: block; font-size: 11px; font-weight: 800; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; }
         .input-group input, .input-group select { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 10px; font-size: 14px; background: var(--bg); color: var(--text); }
@@ -127,11 +134,12 @@
         @media (max-width: 768px) {
             .sidebar { position: absolute; left: -100%; }
             .sidebar.open { left: 0; }
-            main { width: 100vw; } /* Su mobile il main prende il 100% */
+            main { width: 100vw; }
             .mobile-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; display: none; }
             .sidebar.open + .mobile-overlay { display: block; }
         }
     </style>
+    
  
          
     
