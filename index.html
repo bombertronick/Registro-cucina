@@ -3,361 +3,495 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Registro Cucina Professionale</title>
+    <title>Cucina Manager Pro</title>
     <style>
-        :root { 
-            --primary: #2c3e50; 
-            --green-done: #2e7d32; 
-            --bg-body: #f8f9fa;
-            --header-pizze: #e67e22;
-            --header-fritti: #c0392b;
-            --header-ass: #2980b9;
+        :root {
+            --primary: #2c3e50;
+            --secondary: #34495e;
+            --accent: #3498db;
+            --success: #27ae60;
+            --danger: #e74c3c;
+            --warning: #f1c40f;
+            --bg-body: #ecf0f1;
+            --card-bg: #ffffff;
+            --text-dark: #2c3e50;
+            --text-light: #7f8c8d;
+            --border: #bdc3c7;
         }
-        body { 
-            font-family: -apple-system, sans-serif; 
-            margin: 0; 
-            background: var(--bg-body); 
-            padding-bottom: 100px;
-            user-select: none;
-        }
-        header { 
-            background: var(--primary); 
-            color: white; 
-            text-align: center; 
-            padding: 18px; 
-            font-weight: 800; 
-            font-size: 20px;
-            letter-spacing: 1px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-        }
-        .tabs { 
-            display: flex; 
-            background: white; 
-            position: sticky; 
-            top: 0; 
-            z-index: 100; 
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            overflow-x: auto;
-        }
-        .tab { 
-            flex: 1; 
-            padding: 16px 10px; 
-            text-align: center; 
-            cursor: pointer; 
-            font-size: 11px; 
-            font-weight: bold; 
-            color: #7f8c8d; 
-            border-bottom: 3px solid transparent; 
-            transition: 0.3s;
-            min-width: 90px;
-        }
-        .tab.active { 
-            color: var(--primary); 
-            border-bottom-color: var(--primary); 
-            background: #fdfdfd;
-        }
-        .content { padding: 12px; }
-        .section { display: none; animation: fadeIn 0.4s; }
-        .section.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        .card { 
-            background: white; 
-            border-radius: 12px; 
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05); 
-            margin-bottom: 20px; 
-            overflow: hidden; 
-            border: 1px solid #dee2e6;
-        }
-        .card-header { 
-            padding: 12px 15px; 
-            font-size: 13px; 
-            font-weight: bold; 
-            color: white; 
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        .header-ass { background: var(--header-ass); }
-        .header-pizze { background: var(--header-pizze); }
-        .header-fritti { background: var(--header-fritti); }
-        .header-gen { background: #555; }
+        * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        
+        body { margin: 0; background: var(--bg-body); padding-bottom: 90px; color: var(--text-dark); transition: background 0.3s; }
+        body.edit-mode { background: #ffeaa7; } /* Sfondo giallo chiaro per farti capire che sei in modifica */
 
+        /* HEADER & MENU */
+        header { background: var(--primary); color: white; display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.2); position: sticky; top: 0; z-index: 1000; }
+        .app-title { font-size: 18px; font-weight: 800; letter-spacing: 1px; margin: 0; }
+        .header-btns { display: flex; gap: 10px; }
+        .icon-btn { background: rgba(255,255,255,0.2); border: none; color: white; padding: 8px 12px; border-radius: 6px; font-size: 14px; cursor: pointer; transition: 0.2s; font-weight: bold; }
+        .icon-btn:active { transform: scale(0.95); background: rgba(255,255,255,0.4); }
+        .icon-btn.active-edit { background: var(--warning); color: var(--text-dark); }
+
+        /* TABS (SCHEDE LUN/GIO, ecc) */
+        .tabs-container { display: flex; background: white; overflow-x: auto; border-bottom: 1px solid var(--border); position: sticky; top: 54px; z-index: 999; }
+        .tab { flex: 1; min-width: 100px; text-align: center; padding: 15px 10px; font-size: 12px; font-weight: bold; color: var(--text-light); border-bottom: 3px solid transparent; cursor: pointer; transition: 0.2s; display: flex; justify-content: center; align-items: center; gap: 5px; }
+        .tab.active { color: var(--accent); border-bottom-color: var(--accent); background: #f8fbff; }
+        .add-tab-btn { background: var(--success); color: white; border: none; padding: 0 20px; font-weight: bold; cursor: pointer; display: none; }
+        body.edit-mode .add-tab-btn { display: flex; align-items: center; }
+
+        /* CONTENUTO E CARD */
+        .content { padding: 15px; }
+        .card { background: var(--card-bg); border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 20px; overflow: hidden; border: 1px solid #e0e6ed; }
+        .card-header { background: var(--secondary); color: white; padding: 12px 15px; font-size: 14px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; text-transform: uppercase; }
+        
+        /* TABELLE PRODOTTI */
         table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-        th { 
-            background: #f1f3f5; 
-            padding: 10px 5px; 
-            text-align: left; 
-            font-size: 10px; 
-            color: #495057; 
-            border-bottom: 1px solid #dee2e6;
-        }
-        td { 
-            padding: 12px 8px; 
-            border-bottom: 1px solid #f1f3f5; 
-            font-size: 14px; 
-            vertical-align: middle; 
-            word-wrap: break-word;
-        }
-        .col-prod { width: 38%; font-weight: 600; color: #2c3e50; }
-        .col-std { width: 18%; font-size: 11px; color: #868e96; line-height: 1.2; }
-        .col-note { width: 32%; }
-        .col-check { width: 12%; text-align: center; }
+        th { background: #f8f9fa; padding: 10px 8px; text-align: left; font-size: 11px; color: var(--text-light); border-bottom: 1px solid var(--border); text-transform: uppercase; }
+        td { padding: 10px 8px; border-bottom: 1px solid #f1f3f5; font-size: 14px; vertical-align: middle; word-wrap: break-word; }
+        
+        .col-prod { width: 35%; font-weight: 600; }
+        .col-std { width: 20%; font-size: 12px; color: var(--text-light); }
+        .col-note { width: 30%; }
+        .col-check { width: 15%; text-align: center; }
+        
+        .note-input { width: 100%; border: 1px solid #dcdde1; border-radius: 6px; padding: 8px; font-size: 12px; background: #fbfbfb; transition: 0.2s; }
+        .note-input:focus { border-color: var(--accent); outline: none; background: white; }
+        input[type="checkbox"] { width: 24px; height: 24px; accent-color: var(--success); cursor: pointer; }
+        
+        tr.done { background-color: #eafaf1 !important; }
+        tr.done .col-prod { color: var(--success); text-decoration: line-through; opacity: 0.7; }
 
-        .note-input { 
-            width: 100%; 
-            border: 1px solid #ced4da; 
-            border-radius: 6px; 
-            padding: 8px; 
-            font-size: 12px; 
-            box-sizing: border-box;
-            background: #fff;
-            transition: 0.2s;
-        }
-        .note-input:focus { border-color: var(--primary); outline: none; background: #fdfdfd; }
+        /* PULSANTI MODIFICA (NASCOSTI DI DEFAULT) */
+        .edit-controls { display: none; }
+        body.edit-mode .edit-controls { display: inline-flex; gap: 5px; }
+        body.edit-mode .view-controls { display: none; }
+        
+        .btn-small { background: var(--danger); color: white; border: none; border-radius: 4px; padding: 5px 8px; font-size: 12px; cursor: pointer; }
+        .btn-small.edit { background: var(--warning); color: var(--text-dark); }
+        .btn-add-item { width: 100%; background: #e8f4f8; color: var(--accent); border: none; padding: 12px; font-weight: bold; cursor: pointer; font-size: 13px; text-transform: uppercase; }
+        .btn-add-section { width: 100%; background: var(--success); color: white; border: none; padding: 15px; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 14px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(39, 174, 96, 0.2); }
+        body:not(.edit-mode) .btn-add-item, body:not(.edit-mode) .btn-add-section { display: none; }
 
-        input[type="checkbox"] { 
-            width: 22px; 
-            height: 22px; 
-            cursor: pointer; 
-            accent-color: var(--green-done);
-        }
+        /* FOOTER */
+        .footer { position: fixed; bottom: 0; width: 100%; background: white; display: flex; padding: 12px; gap: 10px; box-shadow: 0 -4px 15px rgba(0,0,0,0.08); z-index: 1000; }
+        .btn-main { flex: 1; padding: 15px; border: none; border-radius: 8px; font-weight: 800; font-size: 14px; cursor: pointer; transition: 0.2s; }
+        .btn-main:active { transform: scale(0.98); }
+        .btn-reset { background: #fdf2f0; color: var(--danger); border: 1px solid #fadbd8; }
+        .btn-save { background: var(--success); color: white; box-shadow: 0 4px 6px rgba(39, 174, 96, 0.3); }
 
-        tr.done { background-color: #e8f5e9 !important; }
-        tr.done .col-prod { color: var(--green-done); text-decoration: line-through; opacity: 0.6; }
-
-        .footer { 
-            position: fixed; 
-            bottom: 0; 
-            width: 100%; 
-            background: white; 
-            display: flex; 
-            padding: 15px; 
-            gap: 12px; 
-            box-shadow: 0 -4px 15px rgba(0,0,0,0.1); 
-            box-sizing: border-box; 
-        }
-        button { 
-            flex: 1; 
-            padding: 16px; 
-            border: none; 
-            border-radius: 10px; 
-            font-weight: bold; 
-            font-size: 15px; 
-            transition: 0.2s;
-        }
-        button:active { transform: scale(0.98); }
-        .btn-reset { background: #f8f9fa; color: #e74c3c; border: 1px solid #dee2e6; }
-        .btn-save { background: var(--green-done); color: white; box-shadow: 0 4px 6px rgba(46, 125, 50, 0.2); }
+        /* MODALS (FINESTRE A SCOMPARSA) */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 2000; padding: 20px; backdrop-filter: blur(3px); }
+        .modal { background: white; width: 100%; max-width: 400px; border-radius: 12px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); animation: slideUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .modal h3 { margin-top: 0; color: var(--primary); border-bottom: 2px solid var(--bg-body); padding-bottom: 10px; }
+        .input-group { margin-bottom: 15px; }
+        .input-group label { display: block; font-size: 12px; font-weight: bold; color: var(--text-light); margin-bottom: 5px; }
+        .input-group input, .input-group textarea { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; }
+        .modal-btns { display: flex; gap: 10px; margin-top: 20px; }
+        .modal-btns button { flex: 1; padding: 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        .btn-cancel { background: var(--bg-body); color: var(--text-dark); }
+        .btn-confirm { background: var(--accent); color: white; }
     </style>
 </head>
 <body>
 
-<header>REGISTRO CUCINA</header>
+<header>
+    <div class="app-title">👨‍🍳 MANAGER CUCINA</div>
+    <div class="header-btns">
+        <button class="icon-btn" onclick="toggleEditMode()" id="btn-edit" title="Modalità Modifica">✏️ MODIFICA</button>
+        <button class="icon-btn" onclick="openSyncModal()" title="Esporta/Importa Dati">🔄 SYNC</button>
+    </div>
+</header>
 
-<div class="tabs">
-    <div class="tab active" onclick="openTab(event, 'tab1')">LUN/GIO</div>
-    <div class="tab" onclick="openTab(event, 'tab2')">VENERDÌ</div>
-    <div class="tab" onclick="openTab(event, 'tab3')">SAB/DOM</div>
-    <div class="tab" onclick="openTab(event, 'tab4')">MAGAZZINO</div>
+<div class="tabs-container" id="tabs-container">
+    <button class="add-tab-btn" onclick="openTabModal()">+ NUOVA SCHEDA</button>
 </div>
 
-<div class="content">
-    <div id="tab1" class="section active">
-        <div class="card">
-            <div class="card-header header-ass">FRIGO ASSEMBLAGGIO</div>
-            <table id="table-ass"></table>
-        </div>
-        <div class="card">
-            <div class="card-header header-pizze">FRIGO PIZZE</div>
-            <table id="table-piz"></table>
-        </div>
-        <div class="card">
-            <div class="card-header header-fritti">FRIGO FRITTI</div>
-            <table id="table-fri"></table>
-        </div>
+<div class="content" id="main-content">
     </div>
-
-    <div id="tab2" class="section">
-        <div class="card">
-            <div class="card-header header-gen">FRIGO PRINCIPALE (VENERDÌ)</div>
-            <table id="table-ven"></table>
-        </div>
-    </div>
-
-    <div id="tab3" class="section">
-        <div class="card">
-            <div class="card-header header-gen">FRIGO PRINCIPALE (SAB/DOM)</div>
-            <table id="table-sab"></table>
-        </div>
-    </div>
-
-    <div id="tab4" class="section">
-        <div class="card">
-            <div class="card-header header-gen">MAGAZZINO</div>
-            <table id="table-mag"></table>
-        </div>
-    </div>
-</div>
 
 <div class="footer">
-    <button class="btn-reset" onclick="resetForm()">RESET GIORNALIERO</button>
-    <button class="btn-save" onclick="alert('Dati salvati sul telefono!')">SALVA MODIFICHE</button>
+    <button class="btn-main btn-reset" onclick="resetCheckboxes()">🗑️ AZZERA SPUNTE</button>
+    <button class="btn-main btn-save" onclick="alert('Spunte e Note salvate automaticamente sul tuo dispositivo!')">💾 SALVA LAVORO</button>
+</div>
+
+<div class="modal-overlay" id="modal-tab">
+    <div class="modal">
+        <h3 id="modal-tab-title">Nuova Scheda</h3>
+        <div class="input-group">
+            <label>Nome Scheda (es. LUN/GIO, MAGAZZINO)</label>
+            <input type="text" id="input-tab-name" placeholder="Inserisci il nome...">
+        </div>
+        <div class="modal-btns">
+            <button class="btn-cancel" onclick="closeModals()">Annulla</button>
+            <button class="btn-confirm" onclick="saveTab()">Salva</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="modal-section">
+    <div class="modal">
+        <h3 id="modal-section-title">Nuova Sezione</h3>
+        <div class="input-group">
+            <label>Nome Sezione (es. FRIGO PIZZE)</label>
+            <input type="text" id="input-section-name" placeholder="Nome della sezione...">
+        </div>
+        <div class="input-group">
+            <label>Colore Intestazione</label>
+            <select id="input-section-color" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border);">
+                <option value="var(--secondary)">Grigio Scuro (Standard)</option>
+                <option value="var(--header-ass)">Blu (Frigo Assemblaggio)</option>
+                <option value="var(--header-pizze)">Arancione (Frigo Pizze)</option>
+                <option value="var(--header-fritti)">Rosso (Frigo Fritti)</option>
+                <option value="var(--success)">Verde (Magazzino)</option>
+            </select>
+        </div>
+        <div class="modal-btns">
+            <button class="btn-cancel" onclick="closeModals()">Annulla</button>
+            <button class="btn-confirm" onclick="saveSection()">Salva</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="modal-item">
+    <div class="modal">
+        <h3 id="modal-item-title">Nuovo Prodotto</h3>
+        <div class="input-group">
+            <label>Nome Prodotto</label>
+            <input type="text" id="input-item-name" placeholder="es. Fiori di zucca">
+        </div>
+        <div class="input-group">
+            <label>Linea / Preparazione (Cosa serve fuori)</label>
+            <input type="text" id="input-item-line" placeholder="es. 1/3 gn">
+        </div>
+        <div class="input-group">
+            <label>Scorta (Cosa deve stare in frigo/magazzino)</label>
+            <input type="text" id="input-item-stock" placeholder="es. 2, oppure 10kg">
+        </div>
+        <div class="modal-btns">
+            <button class="btn-cancel" onclick="closeModals()">Annulla</button>
+            <button class="btn-confirm" onclick="saveItem()">Salva</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="modal-sync">
+    <div class="modal">
+        <h3>🔄 Sincronizza App</h3>
+        <p style="font-size: 12px; color: var(--text-light); margin-bottom: 15px;">
+            Per passare le liste ai colleghi: clicca su <b>Copia</b>, invia il codice su WhatsApp. Loro dovranno incollarlo qui sotto e cliccare <b>Importa</b>.
+        </p>
+        <div class="input-group">
+            <label>Codice Dati (Struttura App)</label>
+            <textarea id="input-sync-data" rows="6" style="font-family: monospace; font-size: 10px;"></textarea>
+        </div>
+        <div class="modal-btns">
+            <button class="btn-cancel" onclick="closeModals()">Chiudi</button>
+            <button class="btn-confirm" style="background: var(--warning); color: #333;" onclick="copySyncData()">📋 Copia</button>
+            <button class="btn-confirm" onclick="importSyncData()">📥 Importa</button>
+        </div>
+    </div>
 </div>
 <script>
-    const inventory = {
-        // LUNEDI / GIOVEDI - FRIGO ASSEMBLAGGIO
-        ass: [
-            {n:"Ventricina", l:"1/6", s:"-"},
-            {n:"Basilico", l:"1/6", s:"-"},
-            {n:"Pecorino", l:"1/6", s:"-"},
-            {n:"Rughetta", l:"2 conf", s:"-"},
-            {n:"Prosciutto crudo", l:"1 vas", s:"-"}
-        ],
-        // LUNEDI / GIOVEDI - FRIGO PIZZE
-        piz: [
-            {n:"Fiori zucca", l:"1/3", s:"-"},
-            {n:"Pollo cacciatora", l:"1/3", s:"-"},
-            {n:"Patatine fritte", l:"1/3", s:"-"},
-            {n:"Salvia", l:"1 mazzo", s:"-"},
-            {n:"Cipolla", l:"1/", s:"-"},
-            {n:"Nduja", l:"-", s:"-"},
-            {n:"Tonno", l:"-", s:"-"},
-            {n:"Porcini", l:"-", s:"-"},
-            {n:"Porchetta", l:"-", s:"-"},
-            {n:"No lattosio", l:"-", s:"-"},
-            {n:"Olive leccino", l:"-", s:"-"},
-            {n:"Wurstel", l:"-", s:"-"},
-            {n:"Broccoletti", l:"-", s:"-"},
-            {n:"Provola", l:"-", s:"-"},
-            {n:"Grana a scaglie", l:"-", s:"-"},
-            {n:"Pere", l:"-", s:"-"},
-            {n:"Patate forno", l:"-", s:"-"},
-            {n:"Pachino", l:"-", s:"-"},
-            {n:"Melanzane", l:"-", s:"-"},
-            {n:"Peperoni", l:"-", s:"-"},
-            {n:"Zucchine", l:"-", s:"-"},
-            {n:"Salsiccia", l:"-", s:"-"},
-            {n:"Funghi", l:"-", s:"-"},
-            {n:"Olive nere", l:"-", s:"-"},
-            {n:"Carciofi olio", l:"-", s:"-"},
-            {n:"Uova sode", l:"-", s:"-"},
-            {n:"Guanciale", l:"-", s:"-"},
-            {n:"Gorgonzola", l:"-", s:"-"},
-            {n:"Bufala", l:"-", s:"-"},
-            {n:"Carciofi ripassati", l:"-", s:"-"},
-            {n:"Alici", l:"-", s:"-"}
-        ],
-        // LUNEDI / GIOVEDI - FRIGO FRITTI
-        fri: [
-            {n:"Fiori di zucca", l:"-", s:"-"},
-            {n:"Olive ascolane", l:"10 kg", s:"2x5kg"},
-            {n:"Baccalà", l:"-", s:"-"},
-            {n:"Patatine fritte", l:"-", s:"-"},
-            {n:"Ajo ojo", l:"-", s:"-"},
-            {n:"Amatriciana", l:"-", s:"-"},
-            {n:"Carbonara", l:"-", s:"-"},
-            {n:"Cacio e pepe", l:"-", s:"-"},
-            {n:"Partenopea", l:"-", s:"-"},
-            {n:"Nerone", l:"-", s:"-"},
-            {n:"Vaccinara", l:"-", s:"-"},
-            {n:"Ragù if 1", l:"da fare", s:"domani"},
-            {n:"Carciofi cong.", l:"ripassati", s:"-"},
-            {n:"Piselli", l:"-", s:"-"}
-        ],
-        // VENERDI - FRIGO PRINCIPALE
-        ven: [
-            {n:"Fiori di zucca", l:"1/3", s:"1"},
-            {n:"Rughetta", l:"1/3", s:"3 etti"},
-            {n:"Mozz. no lattosio", l:"1/3", s:"1,5 kg"},
-            {n:"Pecorino gratt.", l:"1/6", s:"1 kg"},
-            {n:"Mozzarella julienne", l:"1/1", s:"60 KG"}
-        ],
-        // SABATO E DOMENICA - FRIGO PRINCIPALE
-        sab: [
-            {n:"Fiori di zucca", l:"1/3", s:"1"},
-            {n:"Patate al forno", l:"1/3", s:"3"},
-            {n:"Funghi affettati", l:"1/1", s:"4"},
-            {n:"Prosciutto crudo", l:"1/3", s:"3"},
-            {n:"Mozzarella julienne", l:"1/1", s:"120 KG"},
-            {n:"Sugo", l:"1/1", s:"4"}
-        ],
-        // MAGAZZINO
-        mag: [
-            {n:"Carciofi/Olive/Alici", l:"Apertura", s:"-"},
-            {n:"Olio EVO", l:"< 2lt", s:"-"},
-            {n:"Olio di semi", l:"< 5lt", s:"-"},
-            {n:"Sale/Pepe/Origano", l:"< 2kg", s:"-"},
-            {n:"Mozz. no lattosio", l:"Apertura", s:"-"}
-        ]
-    };
+    // --- 1. STRUTTURA DATI E SALVATAGGIO ---
+    let appStructure = JSON.parse(localStorage.getItem('cucina_manager_struct'));
+    let appState = JSON.parse(localStorage.getItem('cucina_manager_state')) || {};
 
-    function render() {
-        for (let key in inventory) {
-            const table = document.getElementById('table-' + key);
-            if (!table) continue;
+    // Se è la prima volta che apri l'app, crea una struttura di base di esempio
+    if (!appStructure) {
+        appStructure = {
+            "tab_1": {
+                id: "tab_1", name: "LUN/GIO",
+                sections: [
+                    {
+                        id: "sec_1", name: "FRIGO PIZZE", color: "var(--header-pizze)",
+                        items: [
+                            { id: "item_1", n: "Fiori di zucca", l: "1/3", s: "1" },
+                            { id: "item_2", n: "Patate forno", l: "1/3", s: "2" }
+                        ]
+                    }
+                ]
+            }
+        };
+        saveStructure();
+    }
+
+    let activeTabId = Object.keys(appStructure)[0] || null;
+    let editMode = false;
+    let currentEdit = { action: null, tabId: null, secId: null, itemId: null };
+
+    // --- 2. FUNZIONI DI BASE ---
+    function saveStructure() { localStorage.setItem('cucina_manager_struct', JSON.stringify(appStructure)); }
+    function saveState() { localStorage.setItem('cucina_manager_state', JSON.stringify(appState)); }
+    function generateId() { return '_' + Math.random().toString(36).substr(2, 9); }
+
+    function toggleEditMode() {
+        editMode = !editMode;
+        document.body.classList.toggle('edit-mode', editMode);
+        document.getElementById('btn-edit').classList.toggle('active-edit', editMode);
+        renderApp();
+    }
+
+    // --- 3. RENDERING (DISEGNO DELL'INTERFACCIA) ---
+    function renderApp() {
+        renderTabs();
+        renderContent();
+    }
+
+    function renderTabs() {
+        const container = document.getElementById('tabs-container');
+        // Mantieni solo il bottone "Nuova Scheda"
+        const addBtn = container.querySelector('.add-tab-btn');
+        container.innerHTML = '';
+        
+        Object.values(appStructure).forEach(tab => {
+            const div = document.createElement('div');
+            div.className = `tab ${tab.id === activeTabId ? 'active' : ''}`;
+            div.onclick = () => { activeTabId = tab.id; renderApp(); };
             
-            table.innerHTML = `<tr>
-                <th class="col-prod">PRODOTTO</th>
-                <th class="col-std">L / S</th>
-                <th class="col-note">NOTE</th>
-                <th class="col-check">✓</th>
-            </tr>`;
+            let html = `<span>${tab.name}</span>`;
+            if (editMode) {
+                html += `<div class="edit-controls">
+                            <button class="btn-small edit" onclick="event.stopPropagation(); openTabModal('${tab.id}')">✏️</button>
+                            <button class="btn-small" onclick="event.stopPropagation(); deleteTab('${tab.id}')">❌</button>
+                         </div>`;
+            }
+            div.innerHTML = html;
+            container.appendChild(div);
+        });
+        container.appendChild(addBtn);
+    }
+
+    function renderContent() {
+        const container = document.getElementById('main-content');
+        container.innerHTML = '';
+
+        if (!activeTabId || !appStructure[activeTabId]) return;
+
+        const tab = appStructure[activeTabId];
+
+        tab.sections.forEach((sec, secIndex) => {
+            const card = document.createElement('div');
+            card.className = 'card';
             
-            inventory[key].forEach((item, idx) => {
-                const rowId = key + '-' + idx;
-                const savedStr = localStorage.getItem(rowId) || '{"c":false,"n":""}';
-                const saved = JSON.parse(savedStr);
+            // Intestazione Sezione
+            let secHeaderHtml = `<div class="card-header" style="background: ${sec.color};">
+                <span>${sec.name}</span>`;
+            if (editMode) {
+                secHeaderHtml += `<div class="edit-controls">
+                    <button class="btn-small edit" onclick="openSectionModal('${sec.id}')">✏️</button>
+                    <button class="btn-small" onclick="deleteSection('${sec.id}')">❌</button>
+                </div>`;
+            }
+            secHeaderHtml += `</div>`;
+
+            // Tabella Prodotti
+            let tableHtml = `<table>
+                <tr>
+                    <th class="col-prod">Prodotto</th>
+                    <th class="col-std">L / S</th>
+                    <th class="col-note">Note</th>
+                    <th class="col-check">✓</th>
+                </tr>`;
+
+            sec.items.forEach((item, itemIndex) => {
+                const stateKey = `${tab.id}_${sec.id}_${item.id}`;
+                const iState = appState[stateKey] || { c: false, n: "" };
                 
-                const tr = document.createElement('tr');
-                tr.id = 'tr-' + rowId;
-                if (saved.c) tr.className = 'done';
-                
-                tr.innerHTML = `
-                    <td class="col-prod">${item.n}</td>
+                tableHtml += `
+                <tr id="tr-${stateKey}" class="${iState.c ? 'done' : ''}">
+                    <td class="col-prod">
+                        ${item.n}
+                        ${editMode ? `<br><div class="edit-controls" style="margin-top:5px;">
+                            <button class="btn-small edit" onclick="openItemModal('${sec.id}', '${item.id}')">✏️</button>
+                            <button class="btn-small" onclick="deleteItem('${sec.id}', '${item.id}')">❌</button>
+                        </div>` : ''}
+                    </td>
                     <td class="col-std">${item.l}<br>${item.s}</td>
                     <td class="col-note">
-                        <input type="text" class="note-input" placeholder="..." value="${saved.n}" oninput="upd('${rowId}', 'n', this.value)">
+                        <input type="text" class="note-input" value="${iState.n}" placeholder="..." oninput="updateState('${stateKey}', 'n', this.value)" ${editMode ? 'disabled' : ''}>
                     </td>
                     <td class="col-check">
-                        <input type="checkbox" ${saved.c ? 'checked' : ''} onchange="upd('${rowId}', 'c', this.checked)">
+                        <input type="checkbox" ${iState.c ? 'checked' : ''} onchange="updateState('${stateKey}', 'c', this.checked)" ${editMode ? 'disabled' : ''}>
                     </td>
-                `;
-                table.appendChild(tr);
+                </tr>`;
             });
+
+            tableHtml += `</table>`;
+            
+            // Bottone Aggiungi Prodotto (solo in Edit Mode)
+            let addProdHtml = editMode ? `<button class="btn-add-item" onclick="openItemModal('${sec.id}')">+ AGGIUNGI PRODOTTO QUI</button>` : '';
+
+            card.innerHTML = secHeaderHtml + tableHtml + addProdHtml;
+            container.appendChild(card);
+        });
+
+        // Bottone Aggiungi Sezione (solo in Edit Mode)
+        if (editMode) {
+            const addSecBtn = document.createElement('button');
+            addSecBtn.className = 'btn-add-section';
+            addSecBtn.innerText = '+ AGGIUNGI NUOVA SEZIONE (FRIGO/CATEGORIA)';
+            addSecBtn.onclick = () => openSectionModal();
+            container.appendChild(addSecBtn);
         }
     }
 
-    function upd(id, key, val) {
-        const savedStr = localStorage.getItem(id) || '{"c":false,"n":""}';
-        let data = JSON.parse(savedStr);
-        data[key] = val;
-        localStorage.setItem(id, JSON.stringify(data));
+    // --- 4. AGGIORNAMENTO STATO (SPUNTE E NOTE) ---
+    function updateState(key, field, value) {
+        if (!appState[key]) appState[key] = { c: false, n: "" };
+        appState[key][field] = value;
+        saveState();
+        if (field === 'c') {
+            document.getElementById(`tr-${key}`).classList.toggle('done', value);
+        }
+    }
+
+    function resetCheckboxes() {
+        if (confirm("Attenzione: Vuoi cancellare tutte le spunte e le note di oggi?")) {
+            appState = {};
+            saveState();
+            renderApp();
+        }
+    }
+
+    // --- 5. GESTIONE FINESTRE MODALI (CRUD) ---
+    function closeModals() { document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none'); }
+
+    // TAB (Scheda)
+    function openTabModal(tabId = null) {
+        currentEdit = { action: tabId ? 'edit' : 'new', tabId: tabId };
+        document.getElementById('modal-tab-title').innerText = tabId ? 'Modifica Scheda' : 'Nuova Scheda';
+        document.getElementById('input-tab-name').value = tabId ? appStructure[tabId].name : '';
+        document.getElementById('modal-tab').style.display = 'flex';
+    }
+    function saveTab() {
+        const name = document.getElementById('input-tab-name').value.trim();
+        if (!name) return alert("Inserisci un nome!");
         
-        if (key === 'c') {
-            const row = document.getElementById('tr-' + id);
-            if (val) {
-                row.classList.add('done');
-            } else {
-                row.classList.remove('done');
-            }
+        if (currentEdit.action === 'new') {
+            const newId = 'tab' + generateId();
+            appStructure[newId] = { id: newId, name: name, sections: [] };
+            activeTabId = newId;
+        } else {
+            appStructure[currentEdit.tabId].name = name;
+        }
+        saveStructure(); closeModals(); renderApp();
+    }
+    function deleteTab(tabId) {
+        if (confirm("Eliminare intera scheda e tutti i suoi prodotti?")) {
+            delete appStructure[tabId];
+            activeTabId = Object.keys(appStructure)[0] || null;
+            saveStructure(); renderApp();
         }
     }
 
-    function openTab(evt, tabId) {
-        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        document.getElementById(tabId).classList.add('active');
-        evt.currentTarget.classList.add('active');
+    // SECTION (Frigo)
+    function openSectionModal(secId = null) {
+        currentEdit = { action: secId ? 'edit' : 'new', secId: secId };
+        document.getElementById('modal-section-title').innerText = secId ? 'Modifica Sezione' : 'Nuova Sezione';
+        
+        if (secId) {
+            const sec = appStructure[activeTabId].sections.find(s => s.id === secId);
+            document.getElementById('input-section-name').value = sec.name;
+            document.getElementById('input-section-color').value = sec.color;
+        } else {
+            document.getElementById('input-section-name').value = '';
+            document.getElementById('input-section-color').value = 'var(--secondary)';
+        }
+        document.getElementById('modal-section').style.display = 'flex';
     }
+    function saveSection() {
+        const name = document.getElementById('input-section-name').value.trim();
+        const color = document.getElementById('input-section-color').value;
+        if (!name) return alert("Inserisci un nome!");
 
-    function resetForm() {
-        if(confirm("Sei sicuro di voler azzerare tutte le spunte e le note di oggi?")) { 
-            localStorage.clear(); 
-            render(); 
+        if (currentEdit.action === 'new') {
+            appStructure[activeTabId].sections.push({ id: 'sec' + generateId(), name: name, color: color, items: [] });
+        } else {
+            const sec = appStructure[activeTabId].sections.find(s => s.id === currentEdit.secId);
+            sec.name = name; sec.color = color;
+        }
+        saveStructure(); closeModals(); renderApp();
+    }
+    function deleteSection(secId) {
+        if (confirm("Eliminare questa sezione e i suoi prodotti?")) {
+            appStructure[activeTabId].sections = appStructure[activeTabId].sections.filter(s => s.id !== secId);
+            saveStructure(); renderApp();
         }
     }
 
-    render();
+    // ITEM (Prodotto)
+    function openItemModal(secId, itemId = null) {
+        currentEdit = { action: itemId ? 'edit' : 'new', secId: secId, itemId: itemId };
+        document.getElementById('modal-item-title').innerText = itemId ? 'Modifica Prodotto' : 'Nuovo Prodotto';
+        
+        if (itemId) {
+            const sec = appStructure[activeTabId].sections.find(s => s.id === secId);
+            const item = sec.items.find(i => i.id === itemId);
+            document.getElementById('input-item-name').value = item.n;
+            document.getElementById('input-item-line').value = item.l;
+            document.getElementById('input-item-stock').value = item.s;
+        } else {
+            document.getElementById('input-item-name').value = '';
+            document.getElementById('input-item-line').value = '';
+            document.getElementById('input-item-stock').value = '';
+        }
+        document.getElementById('modal-item').style.display = 'flex';
+    }
+    function saveItem() {
+        const n = document.getElementById('input-item-name').value.trim();
+        const l = document.getElementById('input-item-line').value.trim() || "-";
+        const s = document.getElementById('input-item-stock').value.trim() || "-";
+        if (!n) return alert("Inserisci il nome del prodotto!");
+
+        const sec = appStructure[activeTabId].sections.find(sec => sec.id === currentEdit.secId);
+
+        if (currentEdit.action === 'new') {
+            sec.items.push({ id: 'item' + generateId(), n, l, s });
+        } else {
+            const item = sec.items.find(i => i.id === currentEdit.itemId);
+            item.n = n; item.l = l; item.s = s;
+        }
+        saveStructure(); closeModals(); renderApp();
+    }
+    function deleteItem(secId, itemId) {
+        if (confirm("Rimuovere prodotto?")) {
+            const sec = appStructure[activeTabId].sections.find(s => s.id === secId);
+            sec.items = sec.items.filter(i => i.id !== itemId);
+            saveStructure(); renderApp();
+        }
+    }
+
+    // --- 6. SINCRONIZZAZIONE (ESPORTA / IMPORTA) ---
+    function openSyncModal() {
+        document.getElementById('input-sync-data').value = JSON.stringify(appStructure);
+        document.getElementById('modal-sync').style.display = 'flex';
+    }
+    function copySyncData() {
+        const textarea = document.getElementById('input-sync-data');
+        textarea.select();
+        document.execCommand('copy');
+        alert("Codice copiato! Invialo ai tuoi colleghi su WhatsApp.");
+    }
+    function importSyncData() {
+        try {
+            const data = document.getElementById('input-sync-data').value;
+            const parsed = JSON.parse(data);
+            if (typeof parsed === 'object' && Object.keys(parsed).length > 0) {
+                appStructure = parsed;
+                activeTabId = Object.keys(appStructure)[0];
+                saveStructure();
+                closeModals();
+                renderApp();
+                alert("Dati importati con successo!");
+            } else { throw new Error("Dati non validi"); }
+        } catch (e) {
+            alert("Errore nell'importazione. Assicurati di aver incollato il codice corretto.");
+        }
+    }
+
+    // Inizializza l'app all'avvio
+    renderApp();
 </script>
 </body>
 </html>
