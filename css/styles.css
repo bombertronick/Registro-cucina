@@ -1,0 +1,118 @@
+/* File: css/styles.css */
+/* ==========================================================================
+   0. KERNEL VISIVO: SCUTUM BRUTALISM V15.3
+   ========================================================================== */
+:root {
+    /* TEMA SCURO ASSOLUTO (DEFAULT) */
+    --bg: #0D0907;
+    --card: #201311;
+    --sidebar-bg: rgba(20, 10, 10, 0.98);
+    
+    --accent: #C9A464;
+    --accent-glow: rgba(201, 164, 100, 0.15);
+    
+    --text: #F2E8E4;
+    --text-muted: #8A7270;
+    --border: #3D2624;
+    
+    --success: #356E3B;
+    --danger: #8C2222;
+    --warning: #C9A464;
+    --input-bg: var(--bg);
+    
+    /* Geometria e Fisica */
+    --sidebar-w: 280px; 
+    --radius-main: 12px;            
+    --bezier: cubic-bezier(0.2, 0.8, 0.2, 1);
+    --safe-top: env(safe-area-inset-top, 0px); 
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+    
+    /* Motore Vettoriale: Meandro Greco */
+    --meandro-bg: #C9A464;
+    --meandro-pattern: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="36" height="12" viewBox="0 0 36 12"><path d="M0,0h4v12H0zM4,4h4v4H4zM16,4h4v4h-4zM32,4h4v4h-4z" fill="rgba(201,164,100,0.15)"/></svg>');
+}
+
+/* FIX TEMA CHIARO */
+[data-theme="light"] {
+    --bg: #F9F6F0;
+    --card: #FFFFFF;
+    --sidebar-bg: rgba(249, 246, 240, 0.98);
+    --accent: #8C2222;
+    --accent-glow: rgba(140, 34, 34, 0.1);
+    --text: #201311;
+    --text-muted: #7A625F;
+    --border: #E5D5C5;
+    --success: #27632A;             
+    --danger: #B22222;              
+    --warning: #D2A850;             
+    --input-bg: #F0EAE1;
+    --meandro-bg: #8C2222;
+    --meandro-pattern: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="36" height="12" viewBox="0 0 36 12"><path d="M0,0h4v12H0zM4,4h4v4H4zM16,4h4v4h-4zM32,4h4v4h-4z" fill="rgba(140,34,34,0.1)"/></svg>');
+}
+
+/* ==========================================================================
+   1. NORMALIZZAZIONE HARDWARE E LAYER SPA
+   ========================================================================== */
+* { 
+    box-sizing: border-box; 
+    -webkit-tap-highlight-color: transparent; 
+    margin: 0; 
+    padding: 0; 
+    outline: none; 
+}
+
+body { 
+    font-family: 'Plus Jakarta Sans', sans-serif; 
+    background: var(--bg); 
+    color: var(--text); 
+    height: 100dvh; 
+    width: 100vw; 
+    overflow: hidden; 
+    display: flex; 
+    transition: background 0.4s var(--bezier), color 0.4s var(--bezier); 
+    -webkit-font-smoothing: antialiased;
+}
+
+::-webkit-scrollbar { width: 4px; height: 4px; } 
+::-webkit-scrollbar-track { background: transparent; } 
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+
+.spa-view { 
+    position: absolute; inset: 0; display: none; opacity: 0; 
+    pointer-events: none; z-index: 1; 
+    transition: opacity 0.3s var(--bezier), transform 0.3s var(--bezier); 
+    flex-direction: column; transform: scale(0.98);
+}
+
+.spa-view.active { 
+    display: flex; opacity: 1; pointer-events: auto; z-index: 10; transform: scale(1);
+}
+
+body.modal-open { pointer-events: none; }
+
+/* Utilities Globali e Componenti Comuni */
+.card { 
+    background: var(--card); border-radius: var(--radius-main); border: 1px solid var(--border); 
+    overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,0,0.2); 
+}
+
+.input-group { margin-bottom: 24px; text-align: left; } 
+.input-group label { display: block; font-size: 0.8rem; font-weight: 800; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;}
+.input-group input, .input-group select, .input-group textarea { 
+    width: 100%; padding: 16px 20px; border-radius: 12px; border: 2px solid var(--border); 
+    background: var(--input-bg); color: var(--text); font-family: inherit; font-size: 1.05rem; font-weight: 700; transition: 0.3s; 
+}
+.input-group input:focus, .input-group select:focus, .input-group textarea:focus { border-color: var(--accent); background: var(--bg); }
+
+.btn-action { 
+    border: 2px solid var(--accent); padding: 18px 24px; border-radius: 12px; font-weight: 800; 
+    cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px; 
+    font-size: 1.05rem; transition: 0.2s; font-family: inherit; width: 100%; 
+    background: var(--accent-glow); color: var(--accent); text-transform: uppercase; letter-spacing: 1px;
+}
+.btn-action.solid { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+.btn-action:active { transform: scale(0.96); }
+
+/* TOAST SYSTEM */
+#toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; gap: 12px; z-index: 10000; pointer-events: none; }
+.toast { background: var(--card); color: var(--text); padding: 16px 24px; border-radius: 12px; font-size: 0.95rem; font-weight: 800; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 2px solid var(--border); transition: 0.3s var(--bezier); }
