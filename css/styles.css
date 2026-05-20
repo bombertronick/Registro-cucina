@@ -1,20 +1,17 @@
-/* File: css/styles.css */
+```css
 /* ==========================================================================
-   0. KERNEL VISIVO: SCUTUM BRUTALISM V15.3
+   0. KERNEL VISIVO: SCUTUM BRUTALISM V15.3 (OFFLINE-FIRST)
    ========================================================================== */
 :root {
     /* TEMA SCURO ASSOLUTO (DEFAULT) */
     --bg: #0D0907;
     --card: #201311;
     --sidebar-bg: rgba(20, 10, 10, 0.98);
-    
     --accent: #C9A464;
     --accent-glow: rgba(201, 164, 100, 0.15);
-    
     --text: #F2E8E4;
     --text-muted: #8A7270;
     --border: #3D2624;
-    
     --success: #356E3B;
     --danger: #8C2222;
     --warning: #C9A464;
@@ -27,12 +24,11 @@
     --safe-top: env(safe-area-inset-top, 0px); 
     --safe-bottom: env(safe-area-inset-bottom, 0px);
     
-    /* Motore Vettoriale: Meandro Greco */
+    /* Motore Vettoriale */
     --meandro-bg: #C9A464;
     --meandro-pattern: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="36" height="12" viewBox="0 0 36 12"><path d="M0,0h4v12H0zM4,4h4v4H4zM16,4h4v4h-4zM32,4h4v4h-4z" fill="rgba(201,164,100,0.15)"/></svg>');
 }
 
-/* FIX TEMA CHIARO */
 [data-theme="light"] {
     --bg: #F9F6F0;
     --card: #FFFFFF;
@@ -53,23 +49,13 @@
 /* ==========================================================================
    1. NORMALIZZAZIONE HARDWARE E LAYER SPA
    ========================================================================== */
-* { 
-    box-sizing: border-box; 
-    -webkit-tap-highlight-color: transparent; 
-    margin: 0; 
-    padding: 0; 
-    outline: none; 
-}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; outline: none; }
 
 body { 
     font-family: 'Plus Jakarta Sans', sans-serif; 
-    background: var(--bg); 
-    color: var(--text); 
-    height: 100dvh; 
-    width: 100vw; 
-    overflow: hidden; 
-    display: flex; 
-    transition: background 0.4s var(--bezier), color 0.4s var(--bezier); 
+    background: var(--bg); color: var(--text); 
+    height: 100dvh; width: 100vw; overflow: hidden; 
+    display: flex; transition: background 0.4s var(--bezier), color 0.4s var(--bezier); 
     -webkit-font-smoothing: antialiased;
 }
 
@@ -84,35 +70,116 @@ body {
     flex-direction: column; transform: scale(0.98);
 }
 
-.spa-view.active { 
-    display: flex; opacity: 1; pointer-events: auto; z-index: 10; transform: scale(1);
-}
-
+.spa-view.active { display: flex; opacity: 1; pointer-events: auto; z-index: 10; transform: scale(1); }
 body.modal-open { pointer-events: none; }
 
-/* Utilities Globali e Componenti Comuni */
-.card { 
-    background: var(--card); border-radius: var(--radius-main); border: 1px solid var(--border); 
-    overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,0,0.2); 
+/* ==========================================================================
+   2. COMPONENTI UI CORE E SIDEBAR
+   ========================================================================== */
+.sidebar { 
+    width: var(--sidebar-w); height: 100%; 
+    background: var(--sidebar-bg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    border-right: 2px solid var(--border); 
+    display: flex; flex-direction: column; padding: 24px; 
+    z-index: 1000; flex-shrink: 0; transition: transform 0.4s var(--bezier), left 0.4s var(--bezier); position: relative;
 }
 
-.input-group { margin-bottom: 24px; text-align: left; } 
-.input-group label { display: block; font-size: 0.8rem; font-weight: 800; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;}
-.input-group input, .input-group select, .input-group textarea { 
-    width: 100%; padding: 16px 20px; border-radius: 12px; border: 2px solid var(--border); 
-    background: var(--input-bg); color: var(--text); font-family: inherit; font-size: 1.05rem; font-weight: 700; transition: 0.3s; 
+.sidebar::after {
+    content: ''; position: absolute; top: 0; right: 0; width: 6px; height: 100%;
+    background: var(--meandro-bg); background-image: var(--meandro-pattern); opacity: 0.8;
 }
+
+.sidebar-logo { font-weight: 800; font-size: 1.5rem; display: flex; align-items: center; gap: 12px; color: var(--accent); letter-spacing: -0.5px; text-transform: uppercase; }
+.nav-item { padding: 14px 18px; border-radius: var(--radius-main); display: flex; align-items: center; gap: 14px; cursor: pointer; color: var(--text-muted); font-weight: 700; font-size: 0.95rem; margin-bottom: 6px; transition: 0.2s; border: 1px solid transparent; }
+.nav-item:hover { background: var(--accent-glow); color: var(--text); } 
+.nav-item.active { background: var(--border); color: var(--accent); border-color: var(--accent-glow); }
+
+/* ==========================================================================
+   3. VIEWPORT CENTRALE, RICERCA E TABELLE
+   ========================================================================== */
+main { 
+    flex: 1; height: 100%; display: flex; flex-direction: column; overflow-y: auto; 
+    padding: 24px; padding-top: calc(24px + var(--safe-top)); padding-bottom: calc(120px + var(--safe-bottom)); 
+    scroll-behavior: smooth; position: relative;
+}
+
+.search-pill { width: 100%; max-width: 800px; margin: 0 auto 32px; position: relative; }
+.search-pill input { width: 100%; padding: 18px 24px 18px 60px; border-radius: 100px; border: 2px solid var(--border); background: var(--card); color: var(--text); font-size: 1.05rem; font-weight: 700; transition: 0.3s var(--bezier); box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+.search-pill input:focus { border-color: var(--accent); background: var(--bg); box-shadow: 0 8px 30px var(--accent-glow); } 
+.search-pill i { position: absolute; left: 26px; top: 50%; transform: translateY(-50%); color: var(--accent); font-size: 1.2rem; }
+
+.card { background: var(--card); border-radius: var(--radius-main); border: 1px solid var(--border); margin-bottom: 32px; overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,0,0.2); }
+.card-header { font-weight: 800; font-size: 1.2rem; padding: 20px 24px; color: var(--accent); display: flex; justify-content: space-between; align-items: center; position: relative; background: var(--bg); border-bottom: 2px solid var(--border); text-transform: uppercase; letter-spacing: 1px; }
+.card-header::after { content: ''; position: absolute; bottom: -2px; left: 0; width: 100%; height: 2px; background: var(--meandro-bg); background-image: var(--meandro-pattern); }
+
+table { width: 100%; border-collapse: collapse; } 
+td { padding: 18px 24px; border-bottom: 1px solid var(--border); vertical-align: middle; } 
+tr:last-child td { border-bottom: none; }
+
+.prod-name { font-weight: 800; font-size: 1.15rem; display: block; margin-bottom: 6px; letter-spacing: -0.3px; color: var(--text); } 
+.prod-meta { font-size: 0.8rem; color: var(--text-muted); font-weight: 700; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+
+.role-badge { padding: 4px 10px; border-radius: 6px; color: #fff; font-weight: 800; font-size: 0.7rem; text-transform: uppercase; border: 1px solid rgba(255,255,255,0.1); } 
+.uom-badge { padding: 4px 8px; border-radius: 6px; background: var(--accent-glow); border: 1px solid var(--accent); color: var(--accent); }
+
+/* Azioni e Input Riga */
+.action-chip { width: 48px; height: 48px; border-radius: 12px; border: 2px solid var(--border); background: var(--input-bg); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: var(--text-muted); transition: 0.2s var(--bezier); }
+.action-chip:active { transform: scale(0.9); }
+.action-chip.fare.active { background: var(--accent-glow); border-color: var(--warning); color: var(--warning); } 
+.action-chip.comprare.active { background: rgba(53, 110, 59, 0.15); border-color: var(--success); color: var(--success); }
+
+.qty-container { display: flex; align-items: center; gap: 6px; background: var(--input-bg); border: 2px solid var(--border); padding: 4px; border-radius: 12px; transition: 0.3s; width: max-content; }
+.qty-container:focus-within { border-color: var(--accent); }
+.qty-input { width: 50px; text-align: center; background: transparent; border: none; color: var(--accent); font-weight: 800; font-size: 1.2rem; }
+.qty-btn { width: 36px; height: 36px; border-radius: 8px; border: none; background: var(--card); color: var(--text); cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: 800; } 
+.qty-btn.plus { background: var(--accent-glow); color: var(--accent); border: 1px solid var(--accent); }
+
+tr.is-done { opacity: 0.4; background: rgba(0,0,0,0.1); transition: 0.4s; } 
+tr.is-done .prod-name { text-decoration: line-through; color: var(--success); }
+
+.note-input { width: 100%; border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; font-size: 0.9rem; background: var(--input-bg); color: var(--text); margin-bottom: 6px; font-weight: 600; transition: border-color 0.3s; }
+.note-input:focus { border-color: var(--accent); }
+
+/* ==========================================================================
+   4. MODALI E FORM CORE
+   ========================================================================== */
+.modal-overlay { 
+    position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    display: none; justify-content: center; align-items: center; z-index: 5000; padding: 20px; pointer-events: auto; 
+}
+.modal-box { 
+    background: var(--card); border-radius: var(--radius-main); width: 100%; max-width: 600px; 
+    padding: 32px; max-height: 85dvh; overflow-y: auto; border: 1px solid var(--border); 
+    animation: modalIn 0.3s var(--bezier) forwards; pointer-events: auto; box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+}
+
+@keyframes modalIn { from { opacity: 0; transform: scale(0.9) translateY(20px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+
+.input-group { margin-bottom: 24px; width: 100%; } 
+.input-group label { display: block; font-size: 0.8rem; font-weight: 800; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;}
+.input-group input, .input-group select, .input-group textarea { width: 100%; padding: 16px 20px; border-radius: 12px; border: 2px solid var(--border); background: var(--input-bg); color: var(--text); font-family: inherit; font-size: 1.05rem; font-weight: 700; transition: 0.3s; }
 .input-group input:focus, .input-group select:focus, .input-group textarea:focus { border-color: var(--accent); background: var(--bg); }
 
-.btn-action { 
-    border: 2px solid var(--accent); padding: 18px 24px; border-radius: 12px; font-weight: 800; 
-    cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px; 
-    font-size: 1.05rem; transition: 0.2s; font-family: inherit; width: 100%; 
-    background: var(--accent-glow); color: var(--accent); text-transform: uppercase; letter-spacing: 1px;
-}
+.btn-action { border: 2px solid var(--accent); padding: 18px 24px; border-radius: 12px; font-weight: 800; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px; font-size: 1.05rem; transition: 0.2s; font-family: inherit; width: 100%; background: var(--accent-glow); color: var(--accent); text-transform: uppercase; letter-spacing: 1px; }
 .btn-action.solid { background: var(--accent); color: var(--bg); border-color: var(--accent); }
 .btn-action:active { transform: scale(0.96); }
 
-/* TOAST SYSTEM */
+/* TOASTS */
 #toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; gap: 12px; z-index: 10000; pointer-events: none; }
 .toast { background: var(--card); color: var(--text); padding: 16px 24px; border-radius: 12px; font-size: 0.95rem; font-weight: 800; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 2px solid var(--border); transition: 0.3s var(--bezier); }
+
+/* ==========================================================================
+   5. RESPONSIVE MOBILE ENGINE
+   ========================================================================== */
+@media (max-width: 768px) { 
+    .sidebar { position: fixed; left: -100%; box-shadow: 20px 0 50px rgba(0,0,0,0.8); } 
+    .sidebar.open { left: 0; } 
+    #sidebar-close { display: block !important; }
+    td { display: block; width: 100%; border-bottom: none; padding: 16px 20px; } 
+    tr { border-bottom: 2px solid var(--border); padding: 8px 0; display: block; } 
+    .actions-wrapper { width: 100%; justify-content: flex-end; margin-top: 12px; }
+    .qty-container { margin-top: 12px; }
+    .modal-box { padding: 24px; }
+}
+
+```
