@@ -1,0 +1,45 @@
+<!-- File: index.html -->
+<!DOCTYPE html>
+<html lang="it" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Scutum ERP V15.3 Absolute (ESM Kernel)</title>
+    
+    <!-- Font e Icone -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Il Fattore Umano: Stili Base -->
+    <link rel="stylesheet" href="./css/styles.css">
+
+    <!-- Librerie CDN per i Protocolli (Senza NPM) -->
+    <!-- Cerbero: CryptoJS per Hashing SHA-256 e Crittografia AES -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <!-- Lazzaro: LocalForage come Wrapper per IndexedDB (Persistenza robusta, niente localStorage) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.10.0/localforage.min.js"></script>
+</head>
+<body>
+    <!-- Container Globale dei Modali e Toast (Fattore Umano) -->
+    <div id="toast-container"></div>
+    <div id="modal-layer"></div>
+
+    <!-- Punti di Innesco (SPA Views) -->
+    <div id="view-auth" class="spa-view active" style="align-items: center; justify-content: center; padding: 20px;"></div>
+    <div id="view-checklist" class="spa-view" style="align-items: center; padding: 24px; padding-top:calc(40px + env(safe-area-inset-top));"></div>
+    <div id="view-app" class="spa-view" style="flex-direction: row;"></div>
+
+    <!-- Modulo di Innesco Principale -->
+    <script type="module">
+        import { Architetto } from './core/architetto.js';
+        
+        // Boot Sequenza Iniziale
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log("[Kernel] Innesco FASE 1: Programma Architetto");
+            await Architetto.boot();
+        });
+    </script>
+</body>
+</html>
