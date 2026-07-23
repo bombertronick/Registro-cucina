@@ -8,6 +8,9 @@
     <meta name="theme-color" content="#f4f7fb" id="theme-color-meta">
     <title>Cucina ERP V10.6 Enterprise</title>
     
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="icon" href="icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="icon.svg">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
@@ -251,7 +254,7 @@
             
             <div class="input-group" style="text-align: left; margin-bottom: 32px;">
                 <label>Password / PIN</label>
-                <input type="password" id="login-password" placeholder="••••" style="width: 100%; padding: 16px; border-radius: var(--radius-md); border: 2px solid var(--border); background: var(--bg); font-weight: 800; letter-spacing: 4px; color: var(--text); font-family: inherit; font-size: 1.2rem;">
+                <input type="password" id="login-password" placeholder="••••" onkeydown="if(event.key==='Enter'){event.preventDefault(); performLogin();}" style="width: 100%; padding: 16px; border-radius: var(--radius-md); border: 2px solid var(--border); background: var(--bg); font-weight: 800; letter-spacing: 4px; color: var(--text); font-family: inherit; font-size: 1.2rem;">
             </div>
 
             <button class="btn-action" style="background: var(--primary); color: #fff; padding: 18px;" onclick="performLogin()">
@@ -570,6 +573,13 @@
         // --- 3. INIZIALIZZAZIONE E PROTOCOLLO DATA RESCUE ---
         function initApp() {
             try {
+                // Link di condivisione: precompila il canale Cloud Hub aziendale
+                const urlHub = new URLSearchParams(location.search).get('hub');
+                if(urlHub && !localStorage.getItem('cucina_v9_hub_id')) {
+                    localStorage.setItem('cucina_v9_hub_id', urlHub);
+                    setTimeout(() => showToast("Canale aziendale rilevato: apri Cloud Hub per sincronizzare.", "info"), 1200);
+                }
+
                 appState = JSON.parse(localStorage.getItem('cucina_v10_state')) || JSON.parse(localStorage.getItem('cucina_v9_state')) || {};
                 let rawV10 = localStorage.getItem('cucina_v10_struct');
                 let rawV9 = localStorage.getItem('cucina_v9_struct');
@@ -718,11 +728,20 @@
             }
         }
 
-        function logout() { 
-            activeProfile = null; 
-            localStorage.removeItem('cucina_v10_session'); 
-            toggleEditMode(false); 
-            checkAuthentication(); 
+        function exitEditMode() {
+            if(!editMode) return;
+            editMode = false;
+            document.body.classList.remove('edit-mode');
+            const btn = document.getElementById('sidebar-edit-status');
+            if(btn) { btn.innerHTML = `<i class="fa-solid fa-unlock"></i> SBLOCCA MODIFICHE`; btn.style.background = "rgba(255,255,255,0.1)"; btn.style.color = "#fff"; }
+            document.querySelectorAll('.edit-only').forEach(el => el.style.display = 'none');
+        }
+
+        function logout() {
+            activeProfile = null;
+            localStorage.removeItem('cucina_v10_session');
+            exitEditMode();
+            checkAuthentication();
         }
 
         function applyRolePermissions() {
@@ -756,6 +775,40 @@
                     </a>
                 `;
             });
+        }
+
+        // --- 6b. GESTIONE COLLEGAMENTI CHECKLIST (HUB PROCEDURE) ---
+        function openChecklistManager() {
+            renderChecklistLinksEditor();
+            document.getElementById('new-checklist-name').value = '';
+            document.getElementById('new-checklist-url').value = '';
+            showModal('modal-checklist-manager');
+        }
+        function renderChecklistLinksEditor() {
+            const list = document.getElementById('checklist-links-editor'); list.innerHTML = '';
+            const checklists = (appStructure.sedi[activeSede] && appStructure.sedi[activeSede].checklists) || [];
+            if(checklists.length === 0) { list.innerHTML = `<div style="text-align:center; padding:16px; color:var(--text-muted); font-size:0.85rem;">Nessun collegamento configurato.</div>`; return; }
+            checklists.forEach(ck => {
+                list.innerHTML += `<div style="display:flex; justify-content:space-between; align-items:center; gap:12px; padding:16px; background:var(--bg); border:1px solid var(--border); border-radius:var(--radius-md);"><span style="font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"><i class="fa-solid fa-clipboard-list" style="color:${ck.color}; margin-right:12px;"></i> ${ck.name}</span><i class="fa-solid fa-trash" style="color:var(--danger); cursor:pointer; padding:8px; flex-shrink:0;" onclick="deleteChecklistLink('${ck.id}')"></i></div>`;
+            });
+        }
+        function addChecklistLink() {
+            const n = sanitize(document.getElementById('new-checklist-name').value);
+            let url = document.getElementById('new-checklist-url').value.trim();
+            const color = document.getElementById('new-checklist-color').value;
+            if(!n || !url) return showToast("Nome e URL sono obbligatori.", "error");
+            if(!/^https?:\/\//i.test(url)) url = 'https://' + url;
+            if(!appStructure.sedi[activeSede].checklists) appStructure.sedi[activeSede].checklists = [];
+            appStructure.sedi[activeSede].checklists.push({ id: 'ck_'+generateId(), name: n, url: url, color: color });
+            document.getElementById('new-checklist-name').value = '';
+            document.getElementById('new-checklist-url').value = '';
+            saveStructure(); renderChecklistLinksEditor(); showToast("Collegamento aggiunto", "success");
+        }
+        function deleteChecklistLink(id) {
+            if(confirm("Eliminare questo collegamento?")) {
+                appStructure.sedi[activeSede].checklists = (appStructure.sedi[activeSede].checklists || []).filter(c => c.id !== id);
+                saveStructure(); renderChecklistLinksEditor();
+            }
         }
 
         // --- 7. RENDERIZZAZIONE ERP E SIDEBAR ---
@@ -928,7 +981,8 @@
         
         function openItemModal(secId, itemId=null) {
             currentEdit = { action: itemId ? 'edit' : 'new', secId: secId, itemId: itemId }; activeItemDays = [];
-            
+            document.getElementById('modal-item-title').innerText = itemId ? 'Modifica Prodotto' : 'Nuovo Prodotto';
+
             const sel = document.getElementById('input-item-cat'); sel.innerHTML = '';
             appStructure.sedi[activeSede].categories.forEach(c => sel.innerHTML += `<option value="${c.id}">${c.name}</option>`);
 
@@ -1254,6 +1308,13 @@
         function toggleTheme() { const t = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'; document.documentElement.setAttribute('data-theme', t); localStorage.setItem('cucina_v8_theme', t); }
 
         window.onload = initApp;
+
+        // --- 17. PWA: SERVICE WORKER (INSTALLABILE + OFFLINE) ---
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js').catch(err => console.warn('SW non registrato:', err));
+            });
+        }
     </script>
 </body>
 </html>
