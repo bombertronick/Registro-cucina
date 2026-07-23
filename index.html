@@ -1185,6 +1185,7 @@
             // Raggruppo per CELLA / MAGAZZINO: una riga per prodotto per cella, intestazione una volta sola.
             let fareSections = [];      // [{name, color, rows:[{prod, reparto, repColor, nota}]}]
             let comprareSections = [];  // [{name, color, rows:[{prod, supplier, qty, missing, ideal, isMag}]}]
+            let orderBySupplier = {};   // { fornitore: { prodotto: {isMag, amount, note} } } -> per WhatsApp, prodotti uniti
             csvDataFare = []; csvDataComprare = [];
 
             fol.sections.forEach(sec => {
@@ -1218,28 +1219,49 @@
                         else if(i.supplier) supName = i.supplier;
                         compRows.push({ prod: i.n, supplier: supName, qty: qtyText, missing, ideal, isMag });
                         csvDataComprare.push({ type:"ORDINE", sec: sec.name, rif: supName, prod: i.n, val: qtyText });
+
+                        // Aggregazione per fornitore (WhatsApp): unisco lo stesso prodotto e sommo il mancante.
+                        if(!orderBySupplier[supName]) orderBySupplier[supName] = {};
+                        const bucket = orderBySupplier[supName];
+                        if(isMag) {
+                            if(!bucket[i.n]) bucket[i.n] = { isMag:true, amount:0 };
+                            bucket[i.n].amount += missing;
+                        } else {
+                            bucket[i.n] = { isMag:false, note: (st.n ? st.n : "") };
+                        }
                     }
                 });
                 if(fareRows.length) fareSections.push({ name: sec.name, color: sec.color, rows: fareRows });
                 if(compRows.length) comprareSections.push({ name: sec.name, color: sec.color, rows: compRows });
             });
 
-            // --- TESTO WHATSAPP (cella come intestazione unica) ---
+            // --- TESTO WHATSAPP: essenziale, una riga per prodotto, niente etichette ripetute ---
+            // Preparazioni: raggruppate per cella, solo prodotto + nota (se personalizzata).
             reportTextFare = "";
             if(fareSections.length) {
-                reportTextFare += `🔪 PREPARAZIONI${dayLabel ? " · " + dayLabel : ""}:\n`;
+                reportTextFare += `🍳 *PREPARAZIONI${dayLabel ? " — " + dayLabel : ""}*\n`;
                 fareSections.forEach(s => {
-                    reportTextFare += `\n▸ ${s.name.toUpperCase()}\n`;
-                    s.rows.forEach(r => reportTextFare += `  • ${r.prod} [${r.reparto}]: ${r.nota}\n`);
+                    reportTextFare += `\n*${s.name}*\n`;
+                    s.rows.forEach(r => {
+                        const note = (r.nota && r.nota !== "Da Preparare") ? ` — ${r.nota}` : "";
+                        reportTextFare += `• ${r.prod}${note}\n`;
+                    });
                 });
-            } else { reportTextFare = "✅ Tutte le preparazioni sono completate."; }
+            } else { reportTextFare = "✅ Preparazioni completate."; }
 
+            // Ordini: raggruppati per fornitore, prodotti uniti, quantità = mancante da ordinare.
             reportTextComprare = "";
-            if(comprareSections.length) {
-                reportTextComprare += `🛒 ORDINI / SPESA${dayLabel ? " · " + dayLabel : ""}:\n(qta = mancante / totale previsto)\n`;
-                comprareSections.forEach(s => {
-                    reportTextComprare += `\n▸ ${s.name.toUpperCase()}\n`;
-                    s.rows.forEach(r => reportTextComprare += `  • ${r.prod} · ${r.supplier} — ${r.qty}\n`);
+            const supList = Object.keys(orderBySupplier);
+            if(supList.length) {
+                reportTextComprare += `🛒 *ORDINI${dayLabel ? " — " + dayLabel : ""}*\n`;
+                supList.forEach(sup => {
+                    reportTextComprare += `\n*${sup}*\n`;
+                    const bucket = orderBySupplier[sup];
+                    Object.keys(bucket).forEach(prod => {
+                        const v = bucket[prod];
+                        const val = v.isMag ? (v.amount > 0 ? v.amount : "") : v.note;
+                        reportTextComprare += `• ${prod}${val ? " " + val : ""}\n`;
+                    });
                 });
             } else { reportTextComprare = "✅ Nessun prodotto da ordinare."; }
 
