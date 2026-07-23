@@ -1,0 +1,22 @@
+{
+  "name": "Cucina ERP",
+  "short_name": "Cucina ERP",
+  "description": "Gestionale per cucina e ristorazione: preparazioni, magazzino, ordini e report.",
+  "lang": "it",
+  "dir": "ltr",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#f4f7fb",
+  "theme_color": "#0f172a",
+  "categories": ["business", "productivity", "food"],
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
