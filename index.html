@@ -188,7 +188,19 @@
         .report-tab { flex: 1; padding: 14px; text-align: center; border-radius: var(--radius-sm); cursor: pointer; font-weight: 800; font-size: 0.95rem; color: var(--text-muted); transition: 0.3s var(--bezier-smooth); display: flex; justify-content: center; align-items: center; gap: 8px; }
         .report-tab:hover { color: var(--text); }
         .report-tab.active { background: var(--card); color: var(--text); box-shadow: var(--shadow-sm); }
-        
+
+        /* Report leggibile: cella come intestazione unica, righe compatte */
+        .report-legend { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 10px 14px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+        .report-sec-head { font-size: 0.9rem; font-weight: 800; color: var(--text); padding: 8px 14px; margin-bottom: 10px; background: var(--card); border-radius: 8px; display: flex; align-items: center; gap: 10px; text-transform: uppercase; letter-spacing: 0.4px; }
+        .report-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 14px; margin-bottom: 8px; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-md); }
+        .report-prod { font-weight: 800; font-size: 0.98rem; color: var(--text); }
+        .report-badge { font-size: 0.6rem; padding: 3px 8px; border-radius: 100px; color: #fff; font-weight: 800; letter-spacing: 0.5px; vertical-align: middle; text-transform: uppercase; }
+        .report-sup { font-size: 0.75rem; color: var(--text-muted); font-weight: 700; margin-left: 4px; white-space: nowrap; }
+        .report-note { font-size: 0.85rem; font-weight: 700; color: #b45309; background: rgba(245, 158, 11, 0.1); padding: 6px 12px; border-radius: 100px; flex-shrink: 0; }
+        .report-qty { flex-shrink: 0; background: var(--accent); color: #fff; padding: 6px 14px; border-radius: 100px; font-weight: 800; font-size: 0.95rem; min-width: 52px; text-align: center; }
+        .report-qty.ok { background: var(--success); }
+        .report-qty.note { background: var(--primary); font-size: 0.82rem; }
+
         .input-group { margin-bottom: 24px; }
         .input-group label { display: block; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.8px; }
         .input-group input, .input-group select { width: 100%; padding: 16px 20px; border: 2px solid var(--border); border-radius: var(--radius-md); font-size: 1.05rem; font-family: inherit; font-weight: 600; background: var(--bg); color: var(--text); transition: all 0.3s var(--bezier-smooth); }
@@ -912,8 +924,7 @@
                     const expAlert = checkExpiry(item.expiry); 
                     
                     let metaInfo = "";
-                    if(cat.type !== 'magazzino') { if(item.l) metaInfo += `<b>L:</b> ${item.l} `; if(item.s) metaInfo += `${metaInfo ? '<span style="color:var(--border);">|</span> ' : ''}<b>S:</b> ${item.s} `; } 
-                    else { if(item.idealQty) metaInfo += `<b>Target:</b> ${item.idealQty} `; }
+                    if(cat.type !== 'magazzino') { if(item.l) metaInfo += `<b>L:</b> ${item.l} `; if(item.s) metaInfo += `${metaInfo ? '<span style="color:var(--border);">|</span> ' : ''}<b>S:</b> ${item.s} `; }
                     
                     if(item.supplierCatId) {
                         const supCat = (appStructure.sedi[activeSede].supplierCategories || []).find(s => s.id === item.supplierCatId);
@@ -927,9 +938,16 @@
                     if(expAlert) metaInfo += `${metaInfo ? '<span style="color:var(--border);">|</span> ' : ''}${expAlert}`;
 
                     let action = '';
-                    if(cat.type === 'magazzino') { 
-                        action = `<div style="display:flex; align-items:center; gap:8px; background:var(--bg); padding:6px; border-radius:100px; border:1px solid var(--border);"><button class="btn-icon" style="width:34px; height:34px; border:none; border-radius:50%;" onclick="updateQty('${k}', -1)"><i class="fa-solid fa-minus" style="font-size:0.8rem;"></i></button><b style="min-width:30px; text-align:center; font-size:1.15rem;">${st.q||0}</b><button class="btn-icon" style="width:34px; height:34px; border:none; border-radius:50%; background:var(--primary); color:white;" onclick="updateQty('${k}', 1)"><i class="fa-solid fa-plus" style="font-size:0.8rem;"></i></button></div>`; 
-                    } else { 
+                    if(cat.type === 'magazzino') {
+                        // Il contatore esprime la quantità prevista: giacenza attuale / totale previsto (target).
+                        const qNow = st.q || 0;
+                        const target = item.idealQty || 0;
+                        const belowTarget = target > 0 && qNow < target;
+                        const counter = target > 0
+                            ? `<b style="min-width:44px; text-align:center; font-size:1.05rem; color:${belowTarget ? 'var(--danger)' : 'var(--success)'};">${qNow}<span style="font-size:0.75rem; font-weight:700; color:var(--text-muted);">/${target}</span></b>`
+                            : `<b style="min-width:30px; text-align:center; font-size:1.15rem;">${qNow}</b>`;
+                        action = `<div style="display:flex; align-items:center; gap:8px; background:var(--bg); padding:6px; border-radius:100px; border:1px solid ${belowTarget ? 'var(--danger)' : 'var(--border)'};"><button class="btn-icon" style="width:34px; height:34px; border:none; border-radius:50%;" onclick="updateQty('${k}', -1)"><i class="fa-solid fa-minus" style="font-size:0.8rem;"></i></button>${counter}<button class="btn-icon" style="width:34px; height:34px; border:none; border-radius:50%; background:var(--primary); color:white;" onclick="updateQty('${k}', 1)"><i class="fa-solid fa-plus" style="font-size:0.8rem;"></i></button></div>`;
+                    } else {
                         // NUOVO V10.6: DOPPIO TASTO AZIONE
                         action = `<div class="actions-wrapper">
                             <button class="action-btn comprare ${st.comprare ? 'active' : ''}" onclick="toggleStateAction('${k}', 'comprare')" title="Da Comprare"><i class="fa-solid fa-cart-shopping"></i></button>
@@ -1157,106 +1175,136 @@
         function openReportModal() { buildReports(); switchReportTab('fare'); showModal('modal-report'); if(window.innerWidth <= 768) document.getElementById('sidebar').classList.remove('open'); }
 
         function buildReports() {
-            if(!activeSede || !activeFolder) return; 
-            const fol = appStructure.sedi[activeSede].folders[activeFolder]; 
+            if(!activeSede || !activeFolder) return;
+            const fol = appStructure.sedi[activeSede].folders[activeFolder];
             const isManager = (activeProfile === 'admin');
             const role = !isManager ? appStructure.sedi[activeSede].roles.find(r=>r.id===activeProfile) : null;
             const allowedCats = role ? role.allowedCats : null;
+            const dayLabel = fol.name || '';
 
-            let fareGrouped = {};     // { "VERDURE": [ {prod, nota, sec} ] }
-            let comprareGrouped = {}; // { "FORNITORE X": [ {prod, qty/nota, sec} ] }
+            // Raggruppo per CELLA / MAGAZZINO: una riga per prodotto per cella, intestazione una volta sola.
+            let fareSections = [];      // [{name, color, rows:[{prod, reparto, repColor, nota}]}]
+            let comprareSections = [];  // [{name, color, rows:[{prod, supplier, qty, missing, ideal, isMag}]}]
+            let orderBySupplier = {};   // { fornitore: { prodotto: {isMag, amount, note} } } -> per WhatsApp, prodotti uniti
             csvDataFare = []; csvDataComprare = [];
 
-            fol.sections.forEach(sec => { 
-                sec.items.forEach(i => { 
+            fol.sections.forEach(sec => {
+                let fareRows = [], compRows = [];
+                sec.items.forEach(i => {
                     if (!isManager && allowedCats && !allowedCats.includes(i.catId)) return;
+                    const k = `${activeSede}_${activeFolder}_${sec.id}_${i.id}`;
+                    const st = appState[k] || {fare:false, comprare:false, n:'', q:0};
+                    const cat = appStructure.sedi[activeSede].categories.find(c => c.id === i.catId) || {name:'Generale', color:'#94a3b8', type:'standard'};
 
-                    const k = `${activeSede}_${activeFolder}_${sec.id}_${i.id}`; 
-                    const st = appState[k] || {fare:false, comprare:false, n:'', q:0}; 
-                    const cat = appStructure.sedi[activeSede].categories.find(c => c.id === i.catId) || {name: 'Generale', type: 'standard'}; 
-                    
-                    // 1. POPOLAMENTO "DA FARE"
-                    if(st.fare || (st.n && st.n.trim() !== "")) { 
-                        let catName = cat.name.toUpperCase();
-                        if(!fareGrouped[catName]) fareGrouped[catName] = [];
-                        let infoFare = st.n ? st.n : "Da Preparare";
-                        fareGrouped[catName].push({prod: i.n, nota: infoFare, sec: sec.name});
-                        csvDataFare.push({ type: "PREP", group: catName, sec: sec.name, prod: i.n, val: infoFare });
+                    // --- DA FARE (solo reparti non-magazzino; la nota di un ordine resta in "Da Comprare") ---
+                    if(cat.type !== 'magazzino' && (st.fare || (st.n && st.n.trim() !== "" && !st.comprare))) {
+                        const nota = st.n ? st.n : "Da Preparare";
+                        fareRows.push({ prod: i.n, reparto: cat.name, repColor: cat.color, nota });
+                        csvDataFare.push({ type:"PREP", sec: sec.name, rif: cat.name, prod: i.n, val: nota });
                     }
 
-                    // 2. POPOLAMENTO "DA COMPRARE"
-                    let addToComprare = false;
-                    let toBuyVal = "";
-
-                    if(st.comprare) {
-                        addToComprare = true;
-                        toBuyVal = st.n ? st.n : "Da Ordinare";
-                    } else if (cat.type === 'magazzino' && st.q !== undefined && i.idealQty && st.q < i.idealQty) {
-                        addToComprare = true;
-                        toBuyVal = `Qta Mancante: ${i.idealQty - st.q}`;
+                    // --- DA COMPRARE (ordini) ---
+                    // Magazzino: quantità = mancante / totale previsto del giorno (X/Y).
+                    let addToComprare = false, qtyText = "", missing = 0, ideal = 0, isMag = false;
+                    if(cat.type === 'magazzino' && i.idealQty) {
+                        ideal = i.idealQty; missing = Math.max(0, ideal - (st.q || 0)); isMag = true;
+                        if(st.comprare || (st.q || 0) < ideal) { addToComprare = true; qtyText = `${missing}/${ideal}`; }
+                    } else if(st.comprare) {
+                        addToComprare = true; qtyText = st.n ? st.n : "Da ordinare";
                     }
 
                     if(addToComprare) {
-                        let supName = 'FORNITORE GENERICO';
-                        if (i.supplierCatId) {
-                            const supObj = (appStructure.sedi[activeSede].supplierCategories || []).find(s => s.id === i.supplierCatId);
-                            if (supObj) supName = supObj.name.toUpperCase();
-                        } else if (i.supplier) {
-                            supName = i.supplier.toUpperCase();
-                        }
+                        let supName = "Generico";
+                        if(i.supplierCatId) { const s = (appStructure.sedi[activeSede].supplierCategories||[]).find(x=>x.id===i.supplierCatId); if(s) supName = s.name; }
+                        else if(i.supplier) supName = i.supplier;
+                        compRows.push({ prod: i.n, supplier: supName, qty: qtyText, missing, ideal, isMag });
+                        csvDataComprare.push({ type:"ORDINE", sec: sec.name, rif: supName, prod: i.n, val: qtyText });
 
-                        if(!comprareGrouped[supName]) comprareGrouped[supName] = [];
-                        comprareGrouped[supName].push({prod: i.n, nota: toBuyVal, sec: sec.name});
-                        csvDataComprare.push({ type: "ORDINE", group: supName, sec: sec.name, prod: i.n, val: toBuyVal });
+                        // Aggregazione per fornitore (WhatsApp): unisco lo stesso prodotto e sommo il mancante.
+                        if(!orderBySupplier[supName]) orderBySupplier[supName] = {};
+                        const bucket = orderBySupplier[supName];
+                        if(isMag) {
+                            if(!bucket[i.n]) bucket[i.n] = { isMag:true, amount:0 };
+                            bucket[i.n].amount += missing;
+                        } else {
+                            bucket[i.n] = { isMag:false, note: (st.n ? st.n : "") };
+                        }
                     }
-                }); 
+                });
+                if(fareRows.length) fareSections.push({ name: sec.name, color: sec.color, rows: fareRows });
+                if(compRows.length) comprareSections.push({ name: sec.name, color: sec.color, rows: compRows });
             });
 
-            // --- GENERAZIONE TESTI PLAIN (WHATSAPP) ---
+            // --- TESTO WHATSAPP: essenziale, una riga per prodotto, niente etichette ripetute ---
+            // Preparazioni: raggruppate per cella, solo prodotto + nota (se personalizzata).
             reportTextFare = "";
-            if(Object.keys(fareGrouped).length > 0) {
-                reportTextFare += `🔪 NOTE BRIGATA E PREPARAZIONI:\n`;
-                for(let cat in fareGrouped) {
-                    reportTextFare += `\n[ ${cat} ]\n`;
-                    fareGrouped[cat].forEach(p => reportTextFare += `• ${p.prod} (${p.sec}): ${p.nota}\n`);
-                }
-            } else { reportTextFare = "✅ Tutte le preparazioni sono completate."; }
+            if(fareSections.length) {
+                reportTextFare += `🍳 *PREPARAZIONI${dayLabel ? " — " + dayLabel : ""}*\n`;
+                fareSections.forEach(s => {
+                    reportTextFare += `\n*${s.name}*\n`;
+                    s.rows.forEach(r => {
+                        const note = (r.nota && r.nota !== "Da Preparare") ? ` — ${r.nota}` : "";
+                        reportTextFare += `• ${r.prod}${note}\n`;
+                    });
+                });
+            } else { reportTextFare = "✅ Preparazioni completate."; }
 
+            // Ordini: raggruppati per fornitore, prodotti uniti, quantità = mancante da ordinare.
             reportTextComprare = "";
-            if(Object.keys(comprareGrouped).length > 0) {
-                reportTextComprare += `🛒 LISTA DELLA SPESA / ORDINI:\n`;
-                for(let sup in comprareGrouped) {
-                    reportTextComprare += `\n[ ${sup} ]\n`;
-                    comprareGrouped[sup].forEach(o => reportTextComprare += `• ${o.prod}: ${o.nota}\n`);
-                }
+            const supList = Object.keys(orderBySupplier);
+            if(supList.length) {
+                reportTextComprare += `🛒 *ORDINI${dayLabel ? " — " + dayLabel : ""}*\n`;
+                supList.forEach(sup => {
+                    reportTextComprare += `\n*${sup}*\n`;
+                    const bucket = orderBySupplier[sup];
+                    Object.keys(bucket).forEach(prod => {
+                        const v = bucket[prod];
+                        const val = v.isMag ? (v.amount > 0 ? v.amount : "") : v.note;
+                        reportTextComprare += `• ${prod}${val ? " " + val : ""}\n`;
+                    });
+                });
             } else { reportTextComprare = "✅ Nessun prodotto da ordinare."; }
 
-            // --- GENERAZIONE HTML PER MODALE ---
-            // Render Da Fare
-            let htmlFare = `<div style="font-family: inherit;">`;
-            if(Object.keys(fareGrouped).length === 0) { htmlFare += `<div style="text-align:center; padding:40px 20px; color:var(--success); background:rgba(16, 185, 129, 0.05); border: 1px dashed var(--success); border-radius:var(--radius-lg);"><i class="fa-solid fa-kitchen-set" style="font-size:48px; margin-bottom:16px;"></i><br><b style="font-size:1.2rem;">Linea Completa!</b><br><span style="font-size:0.9rem; color:var(--text-muted); display:block; margin-top:8px;">Nessuna preparazione richiesta.</span></div>`; } 
-            else {
-                for(let cat in fareGrouped) {
-                    htmlFare += `<div style="margin-bottom:24px;"><div style="font-size:0.75rem; font-weight:800; color:var(--warning); margin-bottom:12px; letter-spacing:1px; text-transform:uppercase;"><i class="fa-solid fa-layer-group"></i> ${cat}</div>`;
-                    fareGrouped[cat].forEach(p => { htmlFare += `<div style="background:rgba(245, 158, 11, 0.05); border-left:4px solid var(--warning); padding:14px 16px; margin-bottom:10px; border-radius:0 var(--radius-md) var(--radius-md) 0;"><div style="font-weight:800; font-size:1rem; color:var(--text);">${p.prod} <span style="font-size:0.8rem; font-weight:600; color:var(--text-muted);">(${p.sec})</span></div><div style="color:#b45309; font-size:0.9rem; margin-top:6px; font-weight:600;">${p.nota}</div></div>`; });
-                    htmlFare += `</div>`;
-                }
-            }
-            htmlFare += `</div>`;
-            document.getElementById('report-preview-fare').innerHTML = htmlFare;
+            renderReportFareHTML(fareSections);
+            renderReportComprareHTML(comprareSections);
+        }
 
-            // Render Da Comprare
-            let htmlComp = `<div style="font-family: inherit;">`;
-            if(Object.keys(comprareGrouped).length === 0) { htmlComp += `<div style="text-align:center; padding:40px 20px; color:var(--success); background:rgba(16, 185, 129, 0.05); border: 1px dashed var(--success); border-radius:var(--radius-lg);"><i class="fa-solid fa-basket-shopping" style="font-size:48px; margin-bottom:16px;"></i><br><b style="font-size:1.2rem;">Magazzino Pieno!</b><br><span style="font-size:0.9rem; color:var(--text-muted); display:block; margin-top:8px;">Nessun ordine necessario.</span></div>`; } 
-            else {
-                for(let sup in comprareGrouped) {
-                    htmlComp += `<div style="background:var(--bg); padding:16px; border-radius:var(--radius-lg); margin-bottom:16px; border:1px solid var(--border); box-shadow:var(--shadow-sm);"><div style="font-size:0.75rem; font-weight:800; color:var(--text-muted); margin-bottom:16px; display:flex; align-items:center; gap:8px; border-bottom:1px solid var(--border); padding-bottom:12px;"><i class="fa-solid fa-truck"></i> FORNITORE: ${sup}</div>`;
-                    comprareGrouped[sup].forEach(o => { htmlComp += `<div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom: 1px dashed var(--border);"><span style="font-size:0.95rem; font-weight:600;">${o.prod}</span><span style="background:var(--accent); color:white; padding:4px 12px; border-radius:100px; font-weight:800; font-size:0.85rem;">${o.nota}</span></div>`; });
-                    htmlComp += `</div>`;
-                }
-            }
-            htmlComp += `</div>`;
-            document.getElementById('report-preview-comprare').innerHTML = htmlComp;
+        function emptyReportBox(icon, title, sub) {
+            return `<div style="text-align:center; padding:40px 20px; color:var(--success); background:rgba(16,185,129,0.05); border:1px dashed var(--success); border-radius:var(--radius-lg);"><i class="fa-solid ${icon}" style="font-size:48px; margin-bottom:16px;"></i><br><b style="font-size:1.2rem;">${title}</b><br><span style="font-size:0.9rem; color:var(--text-muted); display:block; margin-top:8px;">${sub}</span></div>`;
+        }
+
+        function renderReportFareHTML(sections) {
+            const el = document.getElementById('report-preview-fare');
+            if(!sections.length) { el.innerHTML = emptyReportBox('fa-kitchen-set', 'Linea Completa!', 'Nessuna preparazione richiesta.'); return; }
+            let h = `<div style="font-family:inherit;">`;
+            sections.forEach(s => {
+                h += `<div style="margin-bottom:18px;"><div class="report-sec-head" style="border-left:4px solid ${s.color};"><i class="fa-solid fa-snowflake" style="color:${s.color}"></i> ${s.name}</div>`;
+                s.rows.forEach(r => {
+                    h += `<div class="report-row"><div style="min-width:0;"><span class="report-prod">${r.prod}</span> <span class="report-badge" style="background:${r.repColor}">${r.reparto}</span></div><span class="report-note">${r.nota}</span></div>`;
+                });
+                h += `</div>`;
+            });
+            el.innerHTML = h + `</div>`;
+        }
+
+        function renderReportComprareHTML(sections) {
+            const el = document.getElementById('report-preview-comprare');
+            if(!sections.length) { el.innerHTML = emptyReportBox('fa-basket-shopping', 'Magazzino Pieno!', 'Nessun ordine necessario.'); return; }
+            let h = `<div style="font-family:inherit;"><div class="report-legend"><i class="fa-solid fa-circle-info"></i> Quantità = <b>mancante</b> / <b>totale previsto del giorno</b></div>`;
+            sections.forEach(s => {
+                h += `<div style="margin-bottom:18px;"><div class="report-sec-head" style="border-left:4px solid ${s.color};"><i class="fa-solid fa-box" style="color:${s.color}"></i> ${s.name}</div>`;
+                s.rows.forEach(r => {
+                    let qtyHtml;
+                    if(r.isMag) {
+                        qtyHtml = `<span class="report-qty ${r.missing === 0 ? 'ok' : ''}"><b>${r.missing}</b><span style="opacity:.6">/${r.ideal}</span></span>`;
+                    } else {
+                        qtyHtml = `<span class="report-qty note">${r.qty}</span>`;
+                    }
+                    h += `<div class="report-row"><div style="min-width:0;"><span class="report-prod">${r.prod}</span> <span class="report-sup"><i class="fa-solid fa-truck"></i> ${r.supplier}</span></div>${qtyHtml}</div>`;
+                });
+                h += `</div>`;
+            });
+            el.innerHTML = h + `</div>`;
         }
 
         function copyReportText() { 
@@ -1266,8 +1314,8 @@
         function downloadReportExcel() { 
             const data = currentReportTab === 'fare' ? csvDataFare : csvDataComprare;
             if(data.length===0) return showToast("Nessun dato.", "warning"); 
-            let csv = "data:text/csv;charset=utf-8,\uFEFFTIPO;GRUPPO;SETTORE;PRODOTTO;DETTAGLIO\n"; 
-            data.forEach(r => { csv += `"${r.type}";"${r.group}";"${r.sec}";"${r.prod}";"${r.val}"\n`; }); 
+            let csv = "data:text/csv;charset=utf-8,\uFEFFTIPO;MAGAZZINO;RIFERIMENTO;PRODOTTO;DETTAGLIO\n";
+            data.forEach(r => { csv += `"${r.type}";"${r.sec}";"${r.rif}";"${r.prod}";"${r.val}"\n`; });
             const l = document.createElement("a"); l.setAttribute("href", encodeURI(csv)); l.setAttribute("download", `ERP_Report_${currentReportTab.toUpperCase()}.csv`); document.body.appendChild(l); l.click(); document.body.removeChild(l); 
         }
 
