@@ -480,6 +480,11 @@
                 <div class="input-group" style="margin-top: 10px;"><label>Nome Versione (Solo per il Caricamento)</label><input type="text" id="cloud-version-name" placeholder="Es. Menu Estivo"></div>
                 <div style="display: flex; gap: 12px; margin-top: 10px;"><button class="btn-action" style="background: var(--bg); border: 1px solid var(--border); color: var(--text);" onclick="downloadFromCloudHub()"><i class="fa-solid fa-download"></i> Scarica Dati</button><button class="btn-action" style="background: #a855f7; color: white;" onclick="uploadToCloudHub()"><i class="fa-solid fa-upload"></i> Carica Online</button></div>
             </div>
+            <div style="background: rgba(14, 165, 233, 0.05); border: 1px solid rgba(14, 165, 233, 0.15); padding: 24px; border-radius: var(--radius-md); margin-bottom: 24px;">
+                <h4 style="font-size: 0.95rem; font-weight: 800; margin-bottom: 8px; color: var(--text);">Copia dei Dati su File</h4>
+                <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 14px; line-height: 1.5;">Salva in un file JSON tutto quello che l'app tiene su questo dispositivo: reparti, prodotti, quantità di linea e di scorta. Serve per conservare una copia o per inviarla a chi ti assiste.</p>
+                <div style="display: flex; gap: 12px;"><button class="btn-action" style="background: var(--accent); color: white;" onclick="esportaDatiSuFile()"><i class="fa-solid fa-file-arrow-down"></i> Scarica file JSON</button><button class="btn-action" style="background: var(--bg); border: 1px solid var(--border); color: var(--text);" onclick="copiaDatiNegliAppunti()"><i class="fa-solid fa-copy"></i> Copia negli appunti</button></div>
+            </div>
             <div id="cloud-status-message" style="text-align: center; font-size: 0.85rem; font-weight: 700; color: var(--success); display: none;">Sincronizzazione Effettuata con Successo.</div>
             <h4 style="font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 12px; margin-top: 12px;">Versione Attuale Rete</h4>
             <div id="cloud-versions-list" style="display: flex; flex-direction: column; gap: 12px;"></div>
@@ -1348,6 +1353,36 @@
             try { const res = await fetch(`https://api.jsonbin.io/v3/b/${inputId}/latest`, { headers: { 'X-Master-Key': CLOUD_KEY } }); if (!res.ok) throw new Error("ID Errato"); const json = await res.json(); if(json.record && json.record.data) { appStructure = json.record.data; localStorage.setItem('cucina_v9_hub_id', inputId); saveStructure(); closeModals(); initApp(); showToast("App allineata con l'Azienda!", "success"); } } catch(e) { showToast("Codice Azienda non trovato.", "error"); } 
         }
         function shareApp() { const hubId = localStorage.getItem('cucina_v9_hub_id'); const shareUrl = hubId ? `${window.location.href.split('?')[0]}?hub=${hubId}` : window.location.href; if (navigator.share) { navigator.share({ title: 'Cucina ERP', text: 'Accedi al gestionale.', url: shareUrl }).catch(console.error); } else { navigator.clipboard.writeText(shareUrl); showToast("Link copiato!", "success"); } }
+
+        // --- 15b. COPIA DEI DATI SU FILE ---
+        // Impacchetta in un unico JSON tutto quello che l'app tiene in locale. I salvataggi
+        // giornalieri (cucina_bkp_*) restano fuori per non gonfiare il file: di quelli finisce
+        // nel pacchetto solo l'elenco delle date, così si sa che esistono e si possono chiedere.
+        function raccogliDatiLocali() {
+            const dati = {}, backup = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const k = localStorage.key(i);
+                if (!k || !k.startsWith('cucina_')) continue;
+                if (k.startsWith('cucina_bkp_')) { backup.push(k.replace('cucina_bkp_', '')); continue; }
+                const grezzo = localStorage.getItem(k);
+                try { dati[k] = JSON.parse(grezzo); } catch(e) { dati[k] = grezzo; }
+            }
+            return JSON.stringify({ app: 'Cucina ERP', esportatoIl: new Date().toISOString(), backupDisponibili: backup.sort(), dati }, null, 2);
+        }
+        function esportaDatiSuFile() {
+            try {
+                const nome = 'cucina-dati-' + new Date().toISOString().slice(0, 10) + '.json';
+                const url = URL.createObjectURL(new Blob([raccogliDatiLocali()], { type: 'application/json' }));
+                const a = document.createElement('a'); a.href = url; a.download = nome; a.style.display = 'none';
+                document.body.appendChild(a); a.click(); a.remove();
+                setTimeout(() => URL.revokeObjectURL(url), 2000);
+                showToast("File salvato: " + nome, "success");
+            } catch(e) { showToast("File non creato. Prova «Copia negli appunti».", "error"); }
+        }
+        async function copiaDatiNegliAppunti() {
+            try { await navigator.clipboard.writeText(raccogliDatiLocali()); showToast("Dati copiati: ora puoi incollarli dove vuoi.", "success"); }
+            catch(e) { showToast("Il browser non ha permesso la copia.", "error"); }
+        }
 
         // --- 16. UTILITIES FINALI ---
         function requestEditMode() { editMode = !editMode; document.body.classList.toggle('edit-mode', editMode); const btn = document.getElementById('sidebar-edit-status'); if(btn) { btn.innerHTML = editMode ? `<i class="fa-solid fa-lock"></i> BLOCCA MODIFICHE` : `<i class="fa-solid fa-unlock"></i> SBLOCCA MODIFICHE`; btn.style.background = editMode ? "var(--warning)" : "rgba(255,255,255,0.1)"; btn.style.color = editMode ? "#000" : "#fff"; } document.querySelectorAll('.edit-only').forEach(el => el.style.display = editMode ? 'flex' : 'none'); renderApp(); }
